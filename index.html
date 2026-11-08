@@ -131,8 +131,7 @@
       display: block;
       width: 100%;
       height: auto;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
+      image-rendering: auto;
     }
     #scene { aspect-ratio: 16 / 9; }
 
@@ -859,7 +858,7 @@
 
     function rect(x, y, w, h, color) {
       ctx.fillStyle = color;
-      ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+      ctx.fillRect(x, y, w, h);
     }
 
     function isoPoint(x, y) {
@@ -928,22 +927,38 @@
       }
     }
 
+    function drawCanopyLobe(x, y, radiusX, radiusY, shadow, base, light) {
+      const gradient = ctx.createLinearGradient(x, y - radiusY, x, y + radiusY);
+      gradient.addColorStop(0, light);
+      gradient.addColorStop(.5, base);
+      gradient.addColorStop(1, shadow);
+      ctx.beginPath();
+      ctx.moveTo(x - radiusX, y + radiusY * .15);
+      ctx.bezierCurveTo(x - radiusX * 1.15, y - radiusY * .55, x - radiusX * .6, y - radiusY * 1.12, x - radiusX * .12, y - radiusY * .78);
+      ctx.bezierCurveTo(x + radiusX * .25, y - radiusY * 1.22, x + radiusX * .83, y - radiusY * .7, x + radiusX, y - radiusY * .05);
+      ctx.bezierCurveTo(x + radiusX * .94, y + radiusY * .55, x + radiusX * .38, y + radiusY * 1.05, x - radiusX * .18, y + radiusY * .82);
+      ctx.bezierCurveTo(x - radiusX * .76, y + radiusY * .94, x - radiusX * 1.08, y + radiusY * .55, x - radiusX, y + radiusY * .15);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
     function drawBackdropTree(x, y, seed) {
       const palette = stableTile(seed, 3) === 0
         ? ["#314b36", "#567541", "#819648", "#d6813c", "#e7a149"]
         : ["#3b4e34", "#647a3d", "#8d9d48", "#dd7834", "#efa447"];
       const size = 1 + stableTile(seed + 11, 2) * .2;
       isoDiamond(x, y + 2, 13 * size, 4 * size, "#123b3e");
-      rect(x - 3 * size, y - 13 * size, 6 * size, 15 * size, "#584634");
-      rect(x - 2 * size, y - 12 * size, 2 * size, 12 * size, "#81603b");
-      rect(x - 13 * size, y - 24 * size, 13 * size, 12 * size, palette[0]);
-      rect(x - 7 * size, y - 34 * size, 18 * size, 20 * size, palette[1]);
-      rect(x + 4 * size, y - 30 * size, 16 * size, 17 * size, palette[0]);
-      rect(x - 3 * size, y - 41 * size, 17 * size, 20 * size, palette[2]);
-      rect(x - 11 * size, y - 27 * size, 8 * size, 8 * size, palette[3]);
-      rect(x + 10 * size, y - 29 * size, 8 * size, 8 * size, palette[4]);
-      rect(x - 1 * size, y - 38 * size, 7 * size, 6 * size, palette[4]);
-      rect(x - 14 * size, y - 23 * size, 5 * size, 4 * size, palette[2]);
+      const trunk = ctx.createLinearGradient(x - 3, 0, x + 3, 0);
+      trunk.addColorStop(0, "#493d32");
+      trunk.addColorStop(.5, "#89613b");
+      trunk.addColorStop(1, "#564431");
+      rect(x - 3 * size, y - 13 * size, 6 * size, 15 * size, trunk);
+      drawCanopyLobe(x - 8 * size, y - 24 * size, 13 * size, 8 * size, palette[0], palette[1], palette[3]);
+      drawCanopyLobe(x + 5 * size, y - 25 * size, 14 * size, 9 * size, palette[0], palette[1], palette[4]);
+      drawCanopyLobe(x - 2 * size, y - 34 * size, 15 * size, 10 * size, palette[0], palette[2], palette[4]);
+      drawCanopyLobe(x + 7 * size, y - 34 * size, 11 * size, 8 * size, palette[0], palette[1], palette[4]);
+      drawCanopyLobe(x - 10 * size, y - 31 * size, 9 * size, 7 * size, palette[0], palette[3], palette[4]);
     }
 
     function drawWaterBackground() {
@@ -1012,17 +1027,17 @@
             ? ["#424b46", "#4a514b", "#3d4742", "#525249", "#454c47"][tile]
             : ["#648d47", "#72994b", "#7ca34f", "#598244", "#83a74e"][tile];
           if (pathTile) color = tile % 2 ? "#806f4c" : "#897650";
-          isoDiamond(point.x + 1, point.y + 2, 10.3, 7.7, cave ? "#28322e" : "#354c36");
+          isoDiamond(point.x + 1, point.y + 2, 10.3, 7.7, cave ? "#28322e" : "#536744");
           isoDiamond(point.x, point.y, 10.25, 7.7, color);
           const top = cave ? ["#566055", "#5d6256", "#4e594f", "#616153", "#555d54"][tile]
             : pathTile ? (tile % 2 ? "#ad905c" : "#b89a62")
-              : ["#7da64f", "#87ad55", "#91b55a", "#719849", "#98b85b"][tile];
+              : ["#7ba14f", "#82a952", "#88ad56", "#75994b", "#8eae59"][tile];
           isoDiamond(point.x, point.y - .7, 9.6, 6.7, top);
           isoPolygon([
             { x: point.x - 8, y: point.y - 1 },
             { x: point.x, y: point.y - 6.7 },
             { x: point.x + 4, y: point.y - 3.8 }
-          ], pathTile ? "#cfad6d" : cave ? "#71725d" : "#a6c668");
+          ], pathTile ? "#c4a86d" : cave ? "#71725d" : "#91ad5b");
           drawGroundDetail(point, seed, pathTile, cave);
         }
       }
@@ -1291,32 +1306,29 @@
       const shaking = state.shakingTreeX === x && state.treeShakeUntil > performance.now();
       const sway = shaking ? Math.round(Math.sin(state.frame * 1.65) * 2) : 0;
       const base = isoPoint(x + 17, y + 50);
-      const leaf = shade ? "#304d38" : "#934b2d";
-      const midLeaf = shade ? "#4c7040" : "#d16d31";
-      const lightLeaf = shade ? "#789247" : "#ee9139";
-      const goldLeaf = shade ? "#a4a84e" : "#f4b64b";
+      const leaf = shade ? ["#2f4936", "#4b6d40", "#799047"] : ["#87462e", "#c86531", "#ed9039"];
+      const midLeaf = shade ? ["#365238", "#557741", "#8da04d"] : ["#a84f2d", "#d97632", "#f0a143"];
+      const lightLeaf = shade ? ["#435f3b", "#6f8a46", "#a0ae55"] : ["#c56230", "#e88835", "#f5b04a"];
+      const goldLeaf = shade ? ["#536a3d", "#849548", "#b3b05a"] : ["#c96731", "#e99339", "#f7c45a"];
       isoDiamond(base.x + 1, base.y + 2, 22, 7, "#314532");
       isoDiamond(base.x - 1, base.y + 1, 16, 5, "#657446");
       rect(base.x - 6, base.y - 2, 4, 4, "#584a35");
       rect(base.x + 4, base.y - 3, 5, 4, "#574831");
-      rect(base.x - 6 + sway, base.y - 35, 12, 35, "#60432e");
-      rect(base.x - 2 + sway, base.y - 30, 4, 29, "#94613a");
-      rect(base.x - 1 + sway, base.y - 26, 2, 17, "#c68a4b");
-      rect(base.x - 21 + sway, base.y - 49, 17, 18, leaf);
-      rect(base.x - 15 + sway, base.y - 60, 22, 23, midLeaf);
-      rect(base.x - 5 + sway, base.y - 71, 23, 24, lightLeaf);
-      rect(base.x + 10 + sway, base.y - 63, 21, 24, midLeaf);
-      rect(base.x + 19 + sway, base.y - 51, 16, 19, leaf);
-      rect(base.x - 18 + sway, base.y - 44, 49, 16, midLeaf);
-      rect(base.x - 16 + sway, base.y - 50, 7, 5, goldLeaf);
-      rect(base.x - 5 + sway, base.y - 63, 6, 5, goldLeaf);
-      rect(base.x + 1 + sway, base.y - 57, 5, 4, "#f7ca61");
-      rect(base.x + 14 + sway, base.y - 57, 8, 5, lightLeaf);
-      rect(base.x + 24 + sway, base.y - 47, 6, 5, shade ? "#91a148" : "#eda044");
-      rect(base.x - 13 + sway, base.y - 39, 6, 4, shade ? "#8ba34b" : "#e78537");
-      rect(base.x + 4 + sway, base.y - 43, 5, 4, goldLeaf);
-      rect(base.x - 19 + sway, base.y - 31, 5, 4, shade ? "#718b45" : "#c65c2d");
-      rect(base.x + 25 + sway, base.y - 34, 5, 4, shade ? "#829648" : "#dc7431");
+      const trunk = ctx.createLinearGradient(base.x - 6 + sway, 0, base.x + 6 + sway, 0);
+      trunk.addColorStop(0, "#4e392d");
+      trunk.addColorStop(.48, "#95623a");
+      trunk.addColorStop(1, "#59402d");
+      rect(base.x - 6 + sway, base.y - 35, 12, 35, trunk);
+      rect(base.x - 2 + sway, base.y - 30, 2, 29, "#b17a45");
+      drawCanopyLobe(base.x - 13 + sway, base.y - 42, 15, 9, leaf[0], leaf[1], leaf[2]);
+      drawCanopyLobe(base.x + 11 + sway, base.y - 43, 17, 10, midLeaf[0], midLeaf[1], midLeaf[2]);
+      drawCanopyLobe(base.x - 2 + sway, base.y - 55, 19, 13, midLeaf[0], lightLeaf[1], lightLeaf[2]);
+      drawCanopyLobe(base.x + 12 + sway, base.y - 57, 15, 11, leaf[0], midLeaf[1], goldLeaf[2]);
+      drawCanopyLobe(base.x - 13 + sway, base.y - 58, 14, 10, leaf[0], midLeaf[1], goldLeaf[2]);
+      drawCanopyLobe(base.x + 2 + sway, base.y - 66, 13, 10, midLeaf[0], lightLeaf[1], goldLeaf[2]);
+      drawCanopyLobe(base.x - 17 + sway, base.y - 47, 9, 6, goldLeaf[0], goldLeaf[1], goldLeaf[2]);
+      drawCanopyLobe(base.x + 20 + sway, base.y - 48, 9, 6, lightLeaf[0], goldLeaf[1], goldLeaf[2]);
+      drawCanopyLobe(base.x + 2 + sway, base.y - 39, 9, 5, leaf[0], midLeaf[1], goldLeaf[2]);
       if (shaking && Math.sin(state.frame * 1.65) > .6) {
         rect(base.x + 29, base.y - 22, 3, 3, "#e4c866");
         rect(base.x - 21, base.y - 8, 2, 3, "#80a958");
@@ -1619,7 +1631,7 @@
 
     function draw() {
       state.frame++;
-      ctx.imageSmoothingEnabled = false;
+      ctx.imageSmoothingEnabled = true;
       if (state.mode === "field") drawExplorationScene(drawWorld, "#12464b");
       else if (state.mode === "cave") drawExplorationScene(drawCave, "#172126");
       else drawBattle();
