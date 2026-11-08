@@ -928,41 +928,77 @@
       }
     }
 
+    function drawBackdropTree(x, y, seed) {
+      const palette = stableTile(seed, 3) === 0
+        ? ["#314b36", "#567541", "#819648", "#d6813c", "#e7a149"]
+        : ["#3b4e34", "#647a3d", "#8d9d48", "#dd7834", "#efa447"];
+      const size = 1 + stableTile(seed + 11, 2) * .2;
+      isoDiamond(x, y + 2, 13 * size, 4 * size, "#123b3e");
+      rect(x - 3 * size, y - 13 * size, 6 * size, 15 * size, "#584634");
+      rect(x - 2 * size, y - 12 * size, 2 * size, 12 * size, "#81603b");
+      rect(x - 13 * size, y - 24 * size, 13 * size, 12 * size, palette[0]);
+      rect(x - 7 * size, y - 34 * size, 18 * size, 20 * size, palette[1]);
+      rect(x + 4 * size, y - 30 * size, 16 * size, 17 * size, palette[0]);
+      rect(x - 3 * size, y - 41 * size, 17 * size, 20 * size, palette[2]);
+      rect(x - 11 * size, y - 27 * size, 8 * size, 8 * size, palette[3]);
+      rect(x + 10 * size, y - 29 * size, 8 * size, 8 * size, palette[4]);
+      rect(x - 1 * size, y - 38 * size, 7 * size, 6 * size, palette[4]);
+      rect(x - 14 * size, y - 23 * size, 5 * size, 4 * size, palette[2]);
+    }
+
     function drawWaterBackground() {
       const water = ctx.createLinearGradient(0, 0, W, H);
-      water.addColorStop(0, "#174750");
-      water.addColorStop(.48, "#22616a");
-      water.addColorStop(1, "#123a43");
+      water.addColorStop(0, "#12464b");
+      water.addColorStop(.36, "#17707a");
+      water.addColorStop(.7, "#105866");
+      water.addColorStop(1, "#0b3e49");
       ctx.fillStyle = water;
-      ctx.fillRect(0, 0, W, H);
-      for (let y = 8; y < H; y += 17) {
-        for (let x = (y % 3) * 11; x < W; x += 43) {
-          const seed = Math.floor(x / 43) * 13 + Math.floor(y / 17) * 19;
-          const tone = stableTile(seed, 4);
+      ctx.fillRect(-W, -H, W * 3, H * 3);
+      for (let y = 5; y < H; y += 14) {
+        for (let x = (y % 3) * 13; x < W; x += 37) {
+          const seed = Math.floor(x / 37) * 13 + Math.floor(y / 14) * 19;
+          const tone = stableTile(seed, 5);
+          const drift = Math.floor((state.frame + seed * 3) / 30) % 4;
           if (tone === 0) {
-            rect(x, y, 7, 1, "#4a8990");
-            rect(x + 2, y - 1, 4, 1, "#6da2a0");
+            rect(x + drift, y, 8, 1, "#4b9396");
+            rect(x + 2 + drift, y - 1, 4, 1, "#8bc0ad");
           } else if (tone === 1) {
-            rect(x + 15, y + 3, 4, 1, "#33727a");
+            rect(x + 13, y + 2, 5, 1, "#287986");
+            rect(x + 16, y + 1, 3, 1, "#45959a");
           } else if (tone === 2) {
-            isoDiamond(x + 29, y + 8, 2, 1, "#3d7c82");
+            isoDiamond(x + 27, y + 7, 3, 1, "#378994");
+          } else if (tone === 3) {
+            rect(x + 5, y + 6, 3, 1, "#65a9a6");
           }
         }
       }
+      [
+        [7, 46, 5], [42, 18, 8], [302, 26, 4], [294, 72, 9],
+        [11, 133, 6], [36, 159, 9], [271, 165, 7], [314, 143, 5]
+      ].forEach(([x, y, seed]) => drawBackdropTree(x, y, seed));
     }
 
     function isoGround(cave = false) {
-      if (cave) rect(0, 0, W, H, "#172126");
+      if (cave) rect(-W, -H, W * 3, H * 3, "#172126");
       else drawWaterBackground();
       const corners = [
         isoPoint(0, 0), isoPoint(320, 0), isoPoint(320, 180), isoPoint(0, 180)
       ];
-      isoPolygon(corners.map(point => ({ x: point.x, y: point.y + 7 })), cave ? "#252e2d" : "#344a37");
+      isoPolygon(corners.map(point => ({ x: point.x, y: point.y + 11 })), cave ? "#252e2d" : "#314638");
       const groundGradient = ctx.createLinearGradient(24, 15, 258, 163);
-      groundGradient.addColorStop(0, cave ? "#626452" : "#718a4b");
-      groundGradient.addColorStop(.52, cave ? "#444d42" : "#557447");
-      groundGradient.addColorStop(1, cave ? "#343d39" : "#3c5a3c");
+      groundGradient.addColorStop(0, cave ? "#626452" : "#9abf55");
+      groundGradient.addColorStop(.38, cave ? "#555d49" : "#78a94a");
+      groundGradient.addColorStop(.72, cave ? "#444d42" : "#5c8b43");
+      groundGradient.addColorStop(1, cave ? "#343d39" : "#416b3b");
       isoPolygon(corners, groundGradient);
+      ctx.save();
+      ctx.beginPath();
+      corners.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+      ctx.clip();
       for (let y = -12; y < 204; y += 24) {
         for (let x = -16; x < 340; x += 32) {
           const point = isoPoint(x + 16, y + 12);
@@ -974,32 +1010,54 @@
           );
           let color = cave
             ? ["#424b46", "#4a514b", "#3d4742", "#525249", "#454c47"][tile]
-            : ["#4c7045", "#527748", "#587c4b", "#456b42", "#5a7c49"][tile];
+            : ["#648d47", "#72994b", "#7ca34f", "#598244", "#83a74e"][tile];
           if (pathTile) color = tile % 2 ? "#806f4c" : "#897650";
           isoDiamond(point.x + 1, point.y + 2, 10.3, 7.7, cave ? "#28322e" : "#354c36");
           isoDiamond(point.x, point.y, 10.25, 7.7, color);
           const top = cave ? ["#566055", "#5d6256", "#4e594f", "#616153", "#555d54"][tile]
-            : pathTile ? (tile % 2 ? "#98835b" : "#a18a5d")
-              : ["#62844d", "#688951", "#6e8e54", "#5c7f4a", "#718f53"][tile];
+            : pathTile ? (tile % 2 ? "#ad905c" : "#b89a62")
+              : ["#7da64f", "#87ad55", "#91b55a", "#719849", "#98b85b"][tile];
           isoDiamond(point.x, point.y - .7, 9.6, 6.7, top);
           isoPolygon([
             { x: point.x - 8, y: point.y - 1 },
             { x: point.x, y: point.y - 6.7 },
             { x: point.x + 4, y: point.y - 3.8 }
-          ], pathTile ? "#b39b67" : cave ? "#71725d" : "#88a15d");
+          ], pathTile ? "#cfad6d" : cave ? "#71725d" : "#a6c668");
           drawGroundDetail(point, seed, pathTile, cave);
         }
       }
-      ctx.save();
-      ctx.beginPath();
-      corners.forEach((point, index) => {
-        if (index === 0) ctx.moveTo(point.x, point.y);
-        else ctx.lineTo(point.x, point.y);
-      });
-      ctx.closePath();
-      ctx.clip();
+      if (!cave) {
+        const stream = [
+          isoPoint(fishingSpot.x + 31, fishingSpot.y + 2),
+          isoPoint(258, 48),
+          isoPoint(289, 22),
+          isoPoint(320, 0)
+        ];
+        ctx.lineCap = "square";
+        ctx.lineJoin = "miter";
+        ctx.beginPath();
+        stream.forEach((point, index) => {
+          if (index === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.strokeStyle = "#b8a06a";
+        ctx.lineWidth = 13;
+        ctx.stroke();
+        ctx.strokeStyle = "#23777b";
+        ctx.lineWidth = 10;
+        ctx.stroke();
+        ctx.strokeStyle = "#398f91";
+        ctx.lineWidth = 6;
+        ctx.stroke();
+        ctx.strokeStyle = "#a7d2bd";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        const current = Math.floor(state.frame / 14) % 4;
+        rect(stream[1].x + current, stream[1].y - 2, 5, 1, "#b2d8be");
+        rect(stream[2].x - current, stream[2].y + 2, 4, 1, "#68ada7");
+      }
       const light = ctx.createRadialGradient(91, 39, 5, 104, 49, 130);
-      light.addColorStop(0, cave ? "rgb(211 170 93 / 12%)" : "rgb(255 227 151 / 15%)");
+      light.addColorStop(0, cave ? "rgb(211 170 93 / 12%)" : "rgb(255 239 168 / 20%)");
       light.addColorStop(1, "rgb(255 227 151 / 0%)");
       ctx.fillStyle = light;
       ctx.fillRect(0, 0, W, H);
@@ -1014,15 +1072,29 @@
         isoPolygon([
           { x: point.x, y: point.y + 2 },
           { x: next.x, y: next.y + 2 },
-          { x: next.x, y: next.y + 7 },
-          { x: point.x, y: point.y + 7 }
-        ], cave ? "#222b2c" : "#344a37");
+          { x: next.x, y: next.y + 11 },
+          { x: point.x, y: point.y + 11 }
+        ], cave ? "#222b2c" : "#66543c");
+        for (let step = 1; step < 13; step += 1) {
+          const t = step / 13;
+          const seamX = point.x + (next.x - point.x) * t;
+          const seamY = point.y + (next.y - point.y) * t + 4;
+          const shade = stableTile(index * 31 + step * 7, 3);
+          rect(seamX, seamY, 2, 5, shade === 0 ? "#8f7750" : "#493f32");
+          if (step % 3 === 0) rect(seamX + 2, seamY + 1, 2, 2, "#b09560");
+        }
         isoPolygon([
           { x: point.x, y: point.y + 2 },
           { x: next.x, y: next.y + 2 },
-          { x: next.x, y: next.y + 3 },
-          { x: point.x, y: point.y + 3 }
-        ], cave ? "#72705b" : "#9ba66b");
+          { x: next.x, y: next.y + 4 },
+          { x: point.x, y: point.y + 4 }
+        ], cave ? "#72705b" : "#c0bd70");
+        isoPolygon([
+          { x: point.x, y: point.y + 1 },
+          { x: next.x, y: next.y + 1 },
+          { x: next.x, y: next.y + 2 },
+          { x: point.x, y: point.y + 2 }
+        ], cave ? "#72705b" : "#819a50");
       });
     }
 
@@ -1219,36 +1291,35 @@
       const shaking = state.shakingTreeX === x && state.treeShakeUntil > performance.now();
       const sway = shaking ? Math.round(Math.sin(state.frame * 1.65) * 2) : 0;
       const base = isoPoint(x + 17, y + 50);
-      const leaf = shade ? "#294835" : "#35593a";
-      const midLeaf = shade ? "#3d6640" : "#4f7543";
-      const lightLeaf = shade ? "#567d48" : "#73944d";
-      const canopyY = base.y - 39;
-      isoDiamond(base.x + 1, base.y + 2, 20, 7, "#25332b");
+      const leaf = shade ? "#304d38" : "#934b2d";
+      const midLeaf = shade ? "#4c7040" : "#d16d31";
+      const lightLeaf = shade ? "#789247" : "#ee9139";
+      const goldLeaf = shade ? "#a4a84e" : "#f4b64b";
+      isoDiamond(base.x + 1, base.y + 2, 22, 7, "#314532");
+      isoDiamond(base.x - 1, base.y + 1, 16, 5, "#657446");
       rect(base.x - 6, base.y - 2, 4, 4, "#584a35");
       rect(base.x + 4, base.y - 3, 5, 4, "#574831");
-      rect(base.x - 5 + sway, base.y - 34, 10, 34, "#64452f");
-      rect(base.x - 2 + sway, base.y - 29, 4, 28, "#92623b");
-      rect(base.x - 1 + sway, base.y - 25, 2, 16, "#bd8550");
-      rect(base.x - 17 + sway, base.y - 49, 13, 16, leaf);
-      rect(base.x - 12 + sway, base.y - 58, 18, 21, midLeaf);
-      rect(base.x - 3 + sway, base.y - 67, 21, 21, lightLeaf);
-      rect(base.x + 11 + sway, base.y - 61, 18, 21, midLeaf);
-      rect(base.x + 19 + sway, base.y - 51, 13, 17, leaf);
-      rect(base.x - 17 + sway, base.y - 43, 46, 17, midLeaf);
-      rect(base.x - 10 + sway, base.y - 53, 5, 3, "#8da65b");
-      rect(base.x - 1 + sway, base.y - 62, 5, 3, "#abc06b");
-      rect(base.x + 11 + sway, base.y - 55, 4, 3, "#8ba65a");
-      rect(base.x + 23 + sway, base.y - 44, 4, 3, "#a0b45e");
-      rect(base.x + 15 + sway, base.y - 39, 3, 3, "#d4844c");
-      rect(base.x - 13 + sway, base.y - 37, 3, 3, "#c77a46");
-      rect(base.x + 4 + sway, canopyY - 5, 3, 2, "#c9d17a");
-      rect(base.x - 18 + sway, base.y - 48, 5, 4, shade ? "#b96843" : "#c77b46");
-      rect(base.x + 17 + sway, base.y - 57, 6, 4, shade ? "#c27a44" : "#dc934f");
-      rect(base.x - 1 + sway, base.y - 43, 4, 3, "#d7a455");
-      rect(base.x + 7 + sway, base.y - 65, 4, 3, "#d48b4e");
+      rect(base.x - 6 + sway, base.y - 35, 12, 35, "#60432e");
+      rect(base.x - 2 + sway, base.y - 30, 4, 29, "#94613a");
+      rect(base.x - 1 + sway, base.y - 26, 2, 17, "#c68a4b");
+      rect(base.x - 21 + sway, base.y - 49, 17, 18, leaf);
+      rect(base.x - 15 + sway, base.y - 60, 22, 23, midLeaf);
+      rect(base.x - 5 + sway, base.y - 71, 23, 24, lightLeaf);
+      rect(base.x + 10 + sway, base.y - 63, 21, 24, midLeaf);
+      rect(base.x + 19 + sway, base.y - 51, 16, 19, leaf);
+      rect(base.x - 18 + sway, base.y - 44, 49, 16, midLeaf);
+      rect(base.x - 16 + sway, base.y - 50, 7, 5, goldLeaf);
+      rect(base.x - 5 + sway, base.y - 63, 6, 5, goldLeaf);
+      rect(base.x + 1 + sway, base.y - 57, 5, 4, "#f7ca61");
+      rect(base.x + 14 + sway, base.y - 57, 8, 5, lightLeaf);
+      rect(base.x + 24 + sway, base.y - 47, 6, 5, shade ? "#91a148" : "#eda044");
+      rect(base.x - 13 + sway, base.y - 39, 6, 4, shade ? "#8ba34b" : "#e78537");
+      rect(base.x + 4 + sway, base.y - 43, 5, 4, goldLeaf);
+      rect(base.x - 19 + sway, base.y - 31, 5, 4, shade ? "#718b45" : "#c65c2d");
+      rect(base.x + 25 + sway, base.y - 34, 5, 4, shade ? "#829648" : "#dc7431");
       if (shaking && Math.sin(state.frame * 1.65) > .6) {
-        rect(base.x + 28, base.y - 21, 3, 3, "#e4c866");
-        rect(base.x - 20, base.y - 8, 2, 3, "#80a958");
+        rect(base.x + 29, base.y - 22, 3, 3, "#e4c866");
+        rect(base.x - 21, base.y - 8, 2, 3, "#80a958");
       }
     }
 
@@ -1315,6 +1386,13 @@
       rect(base.x + 13, base.y - 13, 2, 2, "#f1d27e");
       rect(base.x - 25, base.y - 43, 4, 12, "#d0ad72");
       rect(base.x - 24, base.y - 41, 2, 8, "#8c5b40");
+      rect(base.x - 24, base.y - 27, 16, 2, "#9a6a43");
+      rect(base.x - 27, base.y - 10, 17, 2, "#9a6a43");
+      rect(base.x - 2, base.y - 8, 22, 2, "#6c4934");
+      rect(base.x + 22, base.y - 49, 6, 12, "#754635");
+      rect(base.x + 21, base.y - 51, 8, 3, "#d18a51");
+      rect(base.x + 23, base.y - 55, 5, 2, "#f0d091");
+      rect(base.x + 25, base.y - 59, 3, 2, "#f5e1b0");
       for (let stone = -22; stone < 27; stone += 8) {
         rect(base.x + stone, base.y + 3 + (stone % 2), 5, 3, stone % 2 ? "#a77a4e" : "#c39a61");
       }
@@ -1528,11 +1606,22 @@
       return state.mode === "field" ? nearestFoe() : null;
     }
 
+    function drawExplorationScene(render, background) {
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, W, H);
+      ctx.save();
+      ctx.translate(W / 2, H / 2);
+      ctx.scale(.82, .82);
+      ctx.translate(-W / 2, -H / 2);
+      render();
+      ctx.restore();
+    }
+
     function draw() {
       state.frame++;
       ctx.imageSmoothingEnabled = false;
-      if (state.mode === "field") drawWorld();
-      else if (state.mode === "cave") drawCave();
+      if (state.mode === "field") drawExplorationScene(drawWorld, "#12464b");
+      else if (state.mode === "cave") drawExplorationScene(drawCave, "#172126");
       else drawBattle();
       requestAnimationFrame(draw);
     }
