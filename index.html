@@ -1591,13 +1591,33 @@
 
     function drawIsoCabin() {
       const base = isoPoint(68, 68);
+      const glow = ctx.createRadialGradient(base.x + 1, base.y - 24, 2, base.x + 1, base.y - 24, 43);
+      glow.addColorStop(0, "rgb(255 202 108 / 17%)");
+      glow.addColorStop(1, "rgb(255 202 108 / 0%)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(base.x - 42, base.y - 68, 86, 82);
       isoDiamond(base.x + 1, base.y + 5, 40, 14, "#26302b");
       isoDiamond(base.x, base.y + 1, 34, 11, "#746044");
+      isoDiamond(base.x, base.y + 3, 29, 9, "#493d32");
       isoPolygon([
         { x: base.x - 29, y: base.y - 23 }, { x: base.x, y: base.y - 8 },
         { x: base.x + 29, y: base.y - 23 }, { x: base.x + 29, y: base.y + 3 },
         { x: base.x, y: base.y + 19 }, { x: base.x - 29, y: base.y + 3 }
       ], "#806247");
+      isoPolygon([
+        { x: base.x - 26, y: base.y - 19 }, { x: base.x, y: base.y - 5 },
+        { x: base.x + 26, y: base.y - 19 }, { x: base.x + 26, y: base.y },
+        { x: base.x, y: base.y + 14 }, { x: base.x - 26, y: base.y }
+      ], "#9b7952");
+      isoPolygon([
+        { x: base.x - 25, y: base.y - 15 }, { x: base.x, y: base.y - 1 },
+        { x: base.x + 24, y: base.y - 15 }, { x: base.x + 24, y: base.y - 12 },
+        { x: base.x, y: base.y + 2 }, { x: base.x - 25, y: base.y - 12 }
+      ], "#76553b");
+      for (let beam = -16; beam <= 16; beam += 8) {
+        const leftStart = isoPoint(68 + beam, 68);
+        rect(leftStart.x - 1, leftStart.y - 17, 2, 15, "#765039");
+      }
       isoPolygon([
         { x: base.x - 29, y: base.y - 23 }, { x: base.x, y: base.y - 8 },
         { x: base.x, y: base.y - 39 }, { x: base.x - 29, y: base.y - 55 }
@@ -1611,21 +1631,50 @@
         const roofY = base.y - 50 + row * 3;
         rect(roofX, roofY, 20, 2, row % 2 ? "#984f36" : "#bd7044");
         rect(roofX + 3, roofY - 2, 3, 2, "#d18a51");
+        rect(roofX + 10, roofY + 1, 6, 1, "#744331");
         rect(base.x + 3 + row * 4, roofY, 18, 2, row % 2 ? "#b96840" : "#c77a48");
         rect(base.x + 6 + row * 4, roofY - 2, 3, 2, "#df9658");
+        rect(base.x + 12 + row * 4, roofY + 1, 5, 1, "#874a33");
       }
+      for (let puff = 0; puff < 3; puff++) {
+        const rise = (state.frame * .18 + puff * 7) % 18;
+        ctx.globalAlpha = .25 - puff * .045;
+        isoDiamond(base.x + 26 + Math.sin(state.frame * .025 + puff) * 2, base.y - 60 - rise, 3 + puff, 2 + puff, "#d8d1bd");
+      }
+      ctx.globalAlpha = 1;
       isoPolygon([
         { x: base.x - 30, y: base.y - 22 }, { x: base.x, y: base.y - 7 },
         { x: base.x + 30, y: base.y - 22 }, { x: base.x + 30, y: base.y - 18 },
         { x: base.x, y: base.y - 3 }, { x: base.x - 30, y: base.y - 18 }
       ], "#d18a51");
+      isoPolygon([
+        { x: base.x - 28, y: base.y - 17 }, { x: base.x, y: base.y - 3 },
+        { x: base.x + 28, y: base.y - 17 }, { x: base.x + 28, y: base.y - 14 },
+        { x: base.x, y: base.y }, { x: base.x - 28, y: base.y - 14 }
+      ], "#efb66b");
+      const windowGlow = ctx.createRadialGradient(base.x - 14, base.y - 29, 1, base.x - 14, base.y - 29, 17);
+      windowGlow.addColorStop(0, "rgb(255 226 142 / 60%)");
+      windowGlow.addColorStop(1, "rgb(255 192 99 / 0%)");
+      ctx.fillStyle = windowGlow;
+      ctx.fillRect(base.x - 32, base.y - 47, 36, 36);
       rect(base.x - 19, base.y - 34, 11, 9, "#455f59");
-      rect(base.x - 18, base.y - 33, 8, 6, "#e4c985");
-      rect(base.x - 16, base.y - 32, 4, 5, "#f5e1a3");
+      rect(base.x - 18, base.y - 33, 8, 6, "#f0d48a");
+      rect(base.x - 16, base.y - 32, 4, 5, "#fff0b5");
       rect(base.x - 20, base.y - 35, 13, 2, "#725039");
+      rect(base.x - 21, base.y - 24, 15, 2, "#75513a");
+      rect(base.x - 17, base.y - 23, 2, 3, "#e3b76d");
+      rect(base.x - 12, base.y - 23, 2, 3, "#e3b76d");
       rect(base.x + 8, base.y - 21, 10, 18, "#49382f");
+      rect(base.x + 6, base.y - 22, 14, 3, "#d5a467");
       rect(base.x + 10, base.y - 19, 6, 15, "#5e4030");
       rect(base.x + 13, base.y - 13, 2, 2, "#f1d27e");
+      const lanternGlow = ctx.createRadialGradient(base.x + 17, base.y - 22, 1, base.x + 17, base.y - 22, 13);
+      lanternGlow.addColorStop(0, "rgb(255 207 111 / 58%)");
+      lanternGlow.addColorStop(1, "rgb(255 207 111 / 0%)");
+      ctx.fillStyle = lanternGlow;
+      ctx.fillRect(base.x + 5, base.y - 34, 24, 24);
+      rect(base.x + 15, base.y - 28, 4, 5, "#69462f");
+      rect(base.x + 16, base.y - 27, 2, 3, "#ffd579");
       rect(base.x - 25, base.y - 43, 4, 12, "#d0ad72");
       rect(base.x - 24, base.y - 41, 2, 8, "#8c5b40");
       rect(base.x - 24, base.y - 27, 16, 2, "#9a6a43");
@@ -1633,11 +1682,19 @@
       rect(base.x - 2, base.y - 8, 22, 2, "#6c4934");
       rect(base.x + 22, base.y - 49, 6, 12, "#754635");
       rect(base.x + 21, base.y - 51, 8, 3, "#d18a51");
+      rect(base.x + 21, base.y - 40, 7, 2, "#59392f");
       rect(base.x + 23, base.y - 55, 5, 2, "#f0d091");
       rect(base.x + 25, base.y - 59, 3, 2, "#f5e1b0");
       for (let stone = -22; stone < 27; stone += 8) {
         rect(base.x + stone, base.y + 3 + (stone % 2), 5, 3, stone % 2 ? "#a77a4e" : "#c39a61");
       }
+      isoDiamond(base.x - 11, base.y + 7, 7, 3, "#3d4837");
+      rect(base.x - 16, base.y + 3, 3, 3, "#66814c");
+      rect(base.x - 10, base.y + 1, 3, 4, "#d77a43");
+      rect(base.x - 5, base.y + 4, 3, 2, "#efb14d");
+      isoDiamond(base.x + 25, base.y + 5, 8, 3, "#333d32");
+      rect(base.x + 21, base.y + 1, 3, 4, "#648149");
+      rect(base.x + 25, base.y + 2, 3, 3, "#d98347");
       rect(base.x - 31, base.y - 21, 3, 25, "#5c4635");
       rect(base.x + 28, base.y - 20, 3, 24, "#674b35");
       rect(base.x - 29, base.y - 18, 2, 16, "#bb8150");
@@ -1687,6 +1744,107 @@
       rect(base.x - 18, base.y - 35, 7, 3, "#929786");
       rect(base.x + 8, base.y - 43, 5, 3, "#a0a18a");
       rect(base.x + 4, base.y - 11, 3, 3, "#d29a55");
+    }
+
+    function drawCaveBats() {
+      for (let bat = 0; bat < 3; bat++) {
+        const worldX = 34 + (state.frame * (.62 + bat * .11) + bat * 83) % 250;
+        const worldY = 26 + bat * 8 + Math.sin(state.frame * .045 + bat * 2) * 10;
+        const point = isoPoint(worldX, worldY);
+        const shadow = isoPoint(worldX + 4, worldY + 43);
+        const scale = [1.25, 1.5, 1.1][bat];
+        const flap = Math.sin(state.frame * .28 + bat * 2) * 5;
+
+        ctx.save();
+        ctx.globalAlpha = .27;
+        ctx.fillStyle = "#080e10";
+        ctx.beginPath();
+        ctx.ellipse(shadow.x, shadow.y, 7 * scale, 2.5 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = .96;
+        ctx.translate(point.x, point.y);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = "#151d20";
+        [-1, 1].forEach(side => {
+          ctx.beginPath();
+          ctx.moveTo(side * 2, 0);
+          ctx.lineTo(side * (9 + flap), -5);
+          ctx.lineTo(side * 7, 1);
+          ctx.lineTo(side * 5, 0);
+          ctx.lineTo(side * 4, 4);
+          ctx.lineTo(side * 2, 2);
+          ctx.closePath();
+          ctx.fill();
+        });
+        ctx.strokeStyle = "#46534d";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-2, 0);
+        ctx.lineTo(-9 - flap, -5);
+        ctx.moveTo(2, 0);
+        ctx.lineTo(9 + flap, -5);
+        ctx.stroke();
+        ctx.fillRect(-2, -2, 4, 6);
+        ctx.fillRect(-2, -5, 1, 3);
+        ctx.fillRect(1, -5, 1, 3);
+        ctx.fillStyle = "#e9b86c";
+        ctx.fillRect(-1, -1, 1, 1);
+        ctx.fillRect(1, -1, 1, 1);
+        ctx.restore();
+      }
+    }
+
+    function drawCaveStalagmite(x, y, height, shade = 0) {
+      const point = isoPoint(x, y);
+      const dark = shade ? "#28312f" : "#343d39";
+      const mid = shade ? "#566055" : "#65685d";
+      const light = shade ? "#788071" : "#93917b";
+      isoDiamond(point.x + 2, point.y + 2, height * .8, height * .25, "#1c2524");
+      isoPolygon([
+        { x: point.x - height * .65, y: point.y },
+        { x: point.x - height * .3, y: point.y - height * .44 },
+        { x: point.x - height * .14, y: point.y - height },
+        { x: point.x + height * .05, y: point.y - height * .35 },
+        { x: point.x + height * .42, y: point.y - height * .64 },
+        { x: point.x + height * .68, y: point.y + 1 }
+      ], dark);
+      isoPolygon([
+        { x: point.x - height * .48, y: point.y - 1 },
+        { x: point.x - height * .21, y: point.y - height * .43 },
+        { x: point.x - height * .08, y: point.y - height * .82 },
+        { x: point.x + height * .1, y: point.y - height * .34 },
+        { x: point.x + height * .42, y: point.y }
+      ], mid);
+      rect(point.x - height * .16, point.y - height * .7, 2, height * .36, light);
+      rect(point.x + height * .3, point.y - height * .4, 2, height * .25, dark);
+    }
+
+    function drawCaveMushrooms(x, y, glowColor = "#8fc3a0") {
+      const point = isoPoint(x, y);
+      const glow = ctx.createRadialGradient(point.x, point.y - 3, 1, point.x, point.y - 3, 12);
+      glow.addColorStop(0, `${glowColor}55`);
+      glow.addColorStop(1, `${glowColor}00`);
+      ctx.fillStyle = glow;
+      ctx.fillRect(point.x - 13, point.y - 16, 26, 22);
+      isoDiamond(point.x + 1, point.y + 1, 9, 3, "#202a28");
+      rect(point.x - 3, point.y - 6, 2, 6, "#c2b798");
+      rect(point.x + 3, point.y - 4, 2, 4, "#a9aa91");
+      isoPolygon([
+        { x: point.x - 8, y: point.y - 6 }, { x: point.x - 5, y: point.y - 10 },
+        { x: point.x, y: point.y - 12 }, { x: point.x + 5, y: point.y - 9 },
+        { x: point.x + 7, y: point.y - 6 }, { x: point.x + 2, y: point.y - 4 },
+        { x: point.x - 3, y: point.y - 4 }
+      ], "#638c78");
+      isoPolygon([
+        { x: point.x - 1, y: point.y - 4 }, { x: point.x + 2, y: point.y - 8 },
+        { x: point.x + 7, y: point.y - 9 }, { x: point.x + 10, y: point.y - 6 },
+        { x: point.x + 7, y: point.y - 3 }, { x: point.x + 3, y: point.y - 2 }
+      ], "#8b6656");
+      rect(point.x - 4, point.y - 9, 2, 1, "#d5e0bb");
+      rect(point.x + 5, point.y - 7, 2, 1, "#ead1a0");
     }
 
     function drawWorld() {
@@ -1794,19 +1952,77 @@
         { x: isoPoint(320, 0).x, y: isoPoint(320, 0).y + 22 },
         { x: isoPoint(0, 0).x, y: isoPoint(0, 0).y + 22 }
       ], "#303a38");
-      for (let x = 14; x < W; x += 37) {
-        const point = isoPoint(x, 20 + (x % 3) * 5);
-        rect(point.x - 4, point.y - 5, 8, 4, "#4e5950");
-        rect(point.x - 2, point.y - 8, 4, 3, "#62685a");
+      for (let index = 0; index < 9; index++) {
+        const worldX = 12 + index * 36;
+        const anchor = isoPoint(worldX, 5 + index % 2 * 4);
+        const length = 7 + stableTile(index * 17, 7);
+        isoPolygon([
+          { x: anchor.x - 6, y: anchor.y - 2 },
+          { x: anchor.x + 5, y: anchor.y + 2 },
+          { x: anchor.x + 2, y: anchor.y + length },
+          { x: anchor.x, y: anchor.y + length + 4 },
+          { x: anchor.x - 2, y: anchor.y + length - 1 },
+          { x: anchor.x - 7, y: anchor.y + 1 }
+        ], index % 3 === 0 ? "#252f30" : "#394440");
+        rect(anchor.x - 4, anchor.y + 1, 2, Math.max(2, length - 4), "#697064");
+        if (index % 2 === 0) {
+          rect(anchor.x + 8, anchor.y + 8, 2, 8 + index % 3 * 2, "#34413b");
+          rect(anchor.x + 10, anchor.y + 10, 1, 7, "#56634f");
+        }
       }
       const tunnel = isoPoint(26, 122);
+      const bounds = [isoPoint(0, 0), isoPoint(320, 0), isoPoint(320, 180), isoPoint(0, 180)];
+      ctx.save();
+      ctx.beginPath();
+      bounds.forEach((point, index) => {
+        if (index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.closePath();
+      ctx.clip();
+      const entranceLight = ctx.createRadialGradient(tunnel.x, tunnel.y - 12, 2, tunnel.x, tunnel.y - 12, 86);
+      entranceLight.addColorStop(0, "rgb(222 164 83 / 17%)");
+      entranceLight.addColorStop(.42, "rgb(179 143 84 / 7%)");
+      entranceLight.addColorStop(1, "rgb(179 143 84 / 0%)");
+      ctx.fillStyle = entranceLight;
+      ctx.fillRect(0, 0, W, H);
+      const caveShade = ctx.createRadialGradient(160, 88, 42, 160, 88, 185);
+      caveShade.addColorStop(0, "rgb(5 10 12 / 0%)");
+      caveShade.addColorStop(.7, "rgb(5 10 12 / 10%)");
+      caveShade.addColorStop(1, "rgb(5 10 12 / 45%)");
+      ctx.fillStyle = caveShade;
+      ctx.fillRect(0, 0, W, H);
+      ctx.restore();
+
       isoDiamond(tunnel.x, tunnel.y + 3, 22, 9, "#202928");
       isoDiamond(tunnel.x, tunnel.y - 1, 17, 7, "#111a1b");
+      isoDiamond(tunnel.x + 2, tunnel.y + 1, 11, 5, "#070e10");
       rect(tunnel.x - 2, tunnel.y - 19, 4, 18, "#776145");
       rect(tunnel.x - 7, tunnel.y - 22, 14, 3, "#9a7951");
+      rect(tunnel.x - 4, tunnel.y - 20, 1, 15, "#ba9360");
+      isoDiamond(tunnel.x + 7, tunnel.y - 6, 2, 1.5, "#e0aa63");
 
       const objects = oreVeins.map(vein => ({
         x: vein.x, y: vein.y, draw: () => drawOreVein(vein)
+      }));
+      [
+        { x: 54, y: 89, height: 10 },
+        { x: 183, y: 76, height: 12, shade: 1 },
+        { x: 291, y: 101, height: 9 },
+        { x: 283, y: 154, height: 13, shade: 1 }
+      ].forEach(formation => objects.push({
+        x: formation.x,
+        y: formation.y,
+        draw: () => drawCaveStalagmite(formation.x, formation.y, formation.height, formation.shade)
+      }));
+      [
+        { x: 83, y: 117, color: "#8fc3a0" },
+        { x: 193, y: 147, color: "#b1a1d1" },
+        { x: 278, y: 92, color: "#91c0c6" }
+      ].forEach(patch => objects.push({
+        x: patch.x,
+        y: patch.y,
+        draw: () => drawCaveMushrooms(patch.x, patch.y, patch.color)
       }));
       encounters.filter(foe => foe.spawnPointId && spawnPoints.find(point => point.id === foe.spawnPointId)?.area === "cave")
         .forEach((foe, index) => objects.push({ x: foe.x, y: foe.y, draw: () => {
@@ -1829,6 +2045,7 @@
           rect(point.x + 2, point.y - 3, 1, 2, "#c8ecc0");
         } });
       }
+      drawCaveBats();
       objects.push({ x: player.x, y: player.y, draw: drawPlayer });
       objects.sort((a, b) => a.x + a.y - (b.x + b.y)).forEach(object => object.draw());
     }
