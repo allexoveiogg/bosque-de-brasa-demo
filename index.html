@@ -132,6 +132,7 @@
       width: 100%;
       height: auto;
       image-rendering: auto;
+      filter: blur(.3px) saturate(.96) contrast(.98);
     }
     #scene { aspect-ratio: 16 / 9; }
 
@@ -521,7 +522,8 @@
     const pressed = new Set();
     const heldTouch = new Set();
     const maxHp = 24;
-    const player = { x: 65, y: 121, face: "down", walkTime: 0, moving: false };
+    const FISHING_DURATION_MS = 2200;
+    const player = { x: 130, y: 150, face: "down", walkTime: 0, moving: false };
     const villagers = [
       { id: "lina", name: "Lina", role: "comerciante da clareira", x: 126, y: 103 }
     ];
@@ -529,7 +531,7 @@
       { id: "quartzo", name: "Quartzo da Raiz", x: 137, y: 105, mined: false },
       { id: "cobre", name: "Cobre Antigo", x: 235, y: 129, mined: false }
     ];
-    const fishingSpot = { x: 199, y: 74 };
+    const fishingSpot = { x: 62, y: 150 };
     const shakeableTrees = [
       { id: "great-oak", name: "Carvalho Antigo", x: 101, y: 5, shaken: false },
       { id: "west-pine", name: "Pinheiro do Oeste", x: 3, y: 18, shaken: false }
@@ -566,6 +568,9 @@
       shakingTreeX: null,
       treeShakeUntil: 0,
       fishingUntil: 0,
+      fishingStartedAt: 0,
+      eventCooldownUntil: 0,
+      cooldownNotice: "",
       lastFrameTime: 0,
       hudAt: 0,
       frame: 0,
@@ -1021,32 +1026,34 @@
           const tile = stableTile(seed, 5);
           const pathTile = !cave && (
             (x + 16 > 78 && x + 16 < 205 && y + 12 > 73 && y + 12 < 137) ||
-            (x + 16 > 177 && x + 16 < 304 && y + 12 > 106 && y + 12 < 145)
+            (x + 16 > 177 && x + 16 < 304 && y + 12 > 106 && y + 12 < 145) ||
+            (x + 16 > 36 && x + 16 < 94 && y + 12 > 128 && y + 12 < 160)
           );
           let color = cave
             ? ["#424b46", "#4a514b", "#3d4742", "#525249", "#454c47"][tile]
             : ["#648d47", "#72994b", "#7ca34f", "#598244", "#83a74e"][tile];
           if (pathTile) color = tile % 2 ? "#806f4c" : "#897650";
-          isoDiamond(point.x + 1, point.y + 2, 10.3, 7.7, cave ? "#28322e" : "#536744");
+          if (cave) isoDiamond(point.x + 1, point.y + 2, 10.3, 7.7, "#28322e");
           isoDiamond(point.x, point.y, 10.25, 7.7, color);
           const top = cave ? ["#566055", "#5d6256", "#4e594f", "#616153", "#555d54"][tile]
             : pathTile ? (tile % 2 ? "#ad905c" : "#b89a62")
               : ["#7ba14f", "#82a952", "#88ad56", "#75994b", "#8eae59"][tile];
           isoDiamond(point.x, point.y - .7, 9.6, 6.7, top);
-          isoPolygon([
-            { x: point.x - 8, y: point.y - 1 },
-            { x: point.x, y: point.y - 6.7 },
-            { x: point.x + 4, y: point.y - 3.8 }
-          ], pathTile ? "#c4a86d" : cave ? "#71725d" : "#91ad5b");
+          if (pathTile || cave) {
+            isoPolygon([
+              { x: point.x - 8, y: point.y - 1 },
+              { x: point.x, y: point.y - 6.7 },
+              { x: point.x + 4, y: point.y - 3.8 }
+            ], pathTile ? "#c4a86d" : "#71725d");
+          }
           drawGroundDetail(point, seed, pathTile, cave);
         }
       }
       if (!cave) {
         const stream = [
-          isoPoint(fishingSpot.x + 31, fishingSpot.y + 2),
-          isoPoint(258, 48),
-          isoPoint(289, 22),
-          isoPoint(320, 0)
+          isoPoint(fishingSpot.x - 26, fishingSpot.y + 11),
+          isoPoint(20, 163),
+          isoPoint(0, 180)
         ];
         ctx.lineCap = "square";
         ctx.lineJoin = "miter";
@@ -1429,8 +1436,16 @@
       rect(point.x + 21, point.y - 14, 4, 4, "#678547");
       rect(point.x + 24, point.y - 18, 4, 6, "#85a85b");
       if (state.fishingUntil > performance.now()) {
-        isoDiamond(point.x + 5, point.y - 3, 10, 4, "#f0e2ad");
-        isoDiamond(point.x + 5, point.y - 7, 5, 2, "#fff5d5");
+        const progress = 1 - (state.fishingUntil - performance.now()) / FISHING_DURATION_MS;
+        const splash = progress > .72;
+        const pulse = (Math.sin(state.frame * .55) + 1) / 2;
+        isoDiamond(point.x + 5, point.y - 4, 7 + pulse * 3, 2 + pulse, "#b1d5bd");
+        isoDiamond(point.x + 5, point.y - 6, 3 + pulse * 2, 1, "#f0e2ad");
+        if (splash) {
+          isoDiamond(point.x + 5, point.y - 8 - pulse * 2, 4 + pulse * 2, 2, "#f7e9bc");
+          rect(point.x + 1, point.y - 12 - pulse * 2, 2, 2, "#dce9c0");
+          rect(point.x + 10, point.y - 11, 2, 2, "#dce9c0");
+        }
       }
     }
 
@@ -1461,12 +1476,14 @@
         { x: 304, y: 123, draw: () => drawIsoTree(287, 73, 0) },
         { x: fishingSpot.x + 18, y: fishingSpot.y + 8, draw: drawIsoPond },
         { x: 293, y: 136, draw: () => drawIsoCaveMouth(273, 83) },
-        { x: 236, y: 132, draw: () => {
-          const point = isoPoint(236, 132);
+        { x: 262, y: 135, draw: () => {
+          const point = isoPoint(262, 135);
           isoDiamond(point.x, point.y + 2, 17, 7, "#27322e");
-          rect(point.x - 12, point.y - 5, 14, 8, "#687269");
-          rect(point.x - 4, point.y - 10, 15, 13, "#7b8174");
-          rect(point.x + 8, point.y - 5, 12, 8, "#555f55");
+          isoDiamond(point.x - 8, point.y - 2, 10, 7, "#687269");
+          isoDiamond(point.x + 3, point.y - 6, 12, 9, "#7b8174");
+          isoDiamond(point.x + 14, point.y - 2, 9, 6, "#555f55");
+          rect(point.x - 8, point.y - 10, 5, 2, "#a2a796");
+          rect(point.x + 1, point.y - 14, 5, 2, "#b0b09a");
         } },
         { x: 108, y: 92, draw: () => {
           const point = isoPoint(108, 92);
@@ -1505,14 +1522,45 @@
       objects.sort((a, b) => a.x + a.y - (b.x + b.y)).forEach(object => object.draw());
 
       if (state.fishingUntil > performance.now()) {
+        const elapsed = performance.now() - state.fishingStartedAt;
+        const progress = Math.max(0, Math.min(1, elapsed / FISHING_DURATION_MS));
         const playerPoint = isoPoint(player.x, player.y);
         const waterPoint = isoPoint(fishingSpot.x + 18, fishingSpot.y + 8);
-        ctx.strokeStyle = "#dccf9a";
+        const hand = { x: playerPoint.x + (player.face === "left" ? -3 : 3), y: playerPoint.y - 19 };
+        const castProgress = Math.min(1, progress / .24);
+        const reelProgress = Math.max(0, Math.min(1, (progress - .72) / .28));
+        const castEase = castProgress * (2 - castProgress);
+        const reelEase = reelProgress * reelProgress * (3 - 2 * reelProgress);
+        const bobber = progress < .24
+          ? {
+            x: hand.x + (waterPoint.x - hand.x) * castEase,
+            y: hand.y + (waterPoint.y - hand.y) * castEase
+          }
+          : {
+            x: waterPoint.x + (hand.x - waterPoint.x) * reelEase,
+            y: waterPoint.y + (hand.y - waterPoint.y) * reelEase
+          };
+        const rodAngle = -1.1 + (player.face === "left" ? -.35 : .35) * castEase;
+        const tip = { x: hand.x + Math.cos(rodAngle) * 13, y: hand.y + Math.sin(rodAngle) * 13 };
+        ctx.strokeStyle = "#594532";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(hand.x, hand.y);
+        ctx.lineTo(tip.x, tip.y);
+        ctx.stroke();
+        ctx.strokeStyle = "#e5d7a8";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(playerPoint.x + 2, playerPoint.y - 18);
-        ctx.lineTo(waterPoint.x, waterPoint.y - 4);
+        ctx.moveTo(tip.x, tip.y);
+        ctx.quadraticCurveTo(
+          (tip.x + bobber.x) / 2,
+          Math.min(tip.y, bobber.y) - 5,
+          bobber.x,
+          bobber.y
+        );
         ctx.stroke();
+        isoDiamond(bobber.x, bobber.y + 2, 3, 1.5, "#273b38");
+        isoDiamond(bobber.x, bobber.y, 2, 2, "#f2c469");
       }
     }
 
@@ -1708,6 +1756,25 @@
                   : "O vento traz cheiro de maçã assada. Há pegadas entre as folhas...";
     }
 
+    function updateEventFeedback(now) {
+      if (state.fishingUntil > now) {
+        const progress = (now - state.fishingStartedAt) / FISHING_DURATION_MS;
+        ui.hint.textContent = progress < .24
+          ? "Você arremessa a linha para o lago..."
+          : progress < .72
+            ? "A boia balança na água. Espere a fisgada..."
+            : "Fisgou! Recolhendo a linha...";
+      }
+      if (!state.cooldownNotice) return;
+      const remaining = state.eventCooldownUntil - now;
+      if (remaining <= 0) {
+        state.cooldownNotice = "";
+        updateFieldUI();
+        return;
+      }
+      ui.hint.textContent = `${state.cooldownNotice}: uma nova criatura poderá aparecer em ${Math.ceil(remaining / 1000)} s.`;
+    }
+
     function setMode(mode) {
       state.mode = mode;
       const inEncounter = mode === "battle" || mode === "resolved";
@@ -1747,28 +1814,29 @@
       if (!vein || vein.mined) return;
       vein.mined = true;
       state.minerals++;
-      state.journal = `Você minerou uma pedra de ${vein.name}. O eco despertou Rocafino, guardião de terra e pedra!`;
+      state.journal = `Você minerou uma pedra de ${vein.name}. O eco se espalhou pela gruta...`;
       ui.journal.textContent = state.journal;
       ui.oreCount.textContent = String(state.minerals);
-      rockMonster.defeated = false;
-      rockMonster.hp = rockMonster.maxHp;
-      startEncounter(rockMonster);
+      triggerEventEncounter(rockMonster, "O eco da mineração");
     }
 
     function startFishing() {
       state.busy = true;
       state.fish++;
-      state.fishingUntil = performance.now() + 700;
+      state.fishingStartedAt = performance.now();
+      state.fishingUntil = state.fishingStartedAt + FISHING_DURATION_MS;
       ui.fishCount.textContent = String(state.fish);
-      state.journal = "A fisgada trouxe um peixe-prisma para a mochila — e o barulho acordou Gelegelo, criatura de água e gelo!";
+      state.journal = "Você lançou a linha no lago. A boia dança entre os reflexos...";
       ui.journal.textContent = state.journal;
-      ui.hint.textContent = "A linha puxou! Algo gelado está vindo do lago...";
+      ui.hint.textContent = "Você arremessa a linha para o lago...";
       window.setTimeout(() => {
         state.fishingUntil = 0;
-        waterMonster.defeated = false;
-        waterMonster.hp = waterMonster.maxHp;
-        startEncounter(waterMonster);
-      }, 650);
+        state.fishingStartedAt = 0;
+        state.busy = false;
+        state.journal = "Você recolheu um peixe-prisma. As águas se agitam...";
+        ui.journal.textContent = state.journal;
+        triggerEventEncounter(waterMonster, "O respingo da pesca");
+      }, FISHING_DURATION_MS);
     }
 
     function shakeTree(tree) {
@@ -1778,15 +1846,33 @@
       state.apples++;
       state.shakingTreeX = tree.x;
       state.treeShakeUntil = performance.now() + 900;
-      state.journal = `Uma maçã caiu da ${tree.name} e foi para sua mochila. O farfalhar acordou Folhibrisa, monstro de planta, voador e inseto!`;
+      state.journal = `Uma maçã caiu da ${tree.name} e foi para sua mochila. As folhas farfalham ao vento...`;
       ui.journal.textContent = state.journal;
       ui.appleCount.textContent = String(state.apples);
       ui.hint.textContent = "Um bater de asas ecoa por entre os galhos...";
       window.setTimeout(() => {
-        canopyMonster.defeated = false;
-        canopyMonster.hp = canopyMonster.maxHp;
-        startEncounter(canopyMonster);
+        state.busy = false;
+        triggerEventEncounter(canopyMonster, "O farfalhar da árvore");
       }, 550);
+    }
+
+    function triggerEventEncounter(foe, eventName) {
+      const now = performance.now();
+      const remaining = state.eventCooldownUntil - now;
+      if (remaining > 0) {
+        state.busy = false;
+        state.cooldownNotice = eventName;
+        state.journal = `${state.journal} Nenhuma criatura apareceu desta vez; o local ainda está se acalmando.`;
+        ui.journal.textContent = state.journal;
+        updateEventFeedback(now);
+        return false;
+      }
+      state.eventCooldownUntil = now + 10000;
+      state.cooldownNotice = "";
+      foe.defeated = false;
+      foe.hp = foe.maxHp;
+      startEncounter(foe);
+      return true;
     }
 
     function sellInventory() {
@@ -2022,6 +2108,7 @@
       const delta = state.lastFrameTime ? Math.min((now - state.lastFrameTime) / 1000, .05) : 0;
       state.lastFrameTime = now;
       stepPlayer(delta, now);
+      updateEventFeedback(now);
       requestAnimationFrame(loop);
     }
 
