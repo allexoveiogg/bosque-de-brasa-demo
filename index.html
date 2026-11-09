@@ -1,5 +1,5 @@
 <!-- PROTOTYPE - NOT FOR PRODUCTION -->
-<!-- Question: Can a cozy pixel-art woodland exploration loop lead naturally into an engaging creature battle? -->
+<!-- Question: Can a distinct woodland identity and habitat-based encounters make exploration feel like a creature RPG? -->
 <!-- Date: 2026-11-08 -->
 <!doctype html>
 <html lang="pt-BR">
@@ -324,6 +324,11 @@
     .eyebrow { color: #b0b982; }
     h1, .intro h2 { color: #f0e6c8; }
     .season-chip { border-color: #786947; color: #e2d09d; background: #283238; }
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+    .discovery-progress { display: grid; grid-template-columns: 1fr auto; gap: 5px 8px; margin-top: 10px; color: #b7c1af; font-size: 10px; }
+    .discovery-progress strong { color: #e5cd8a; font-family: ui-monospace, monospace; }
+    .discovery-track { grid-column: 1 / -1; height: 5px; overflow: hidden; border-radius: 99px; background: #182126; }
+    .discovery-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7d9d5a, #e5bd66); transition: width 180ms ease; }
     .intro p, .footer { color: #a4b0a7; }
     .footer strong { color: #d2bf83; }
     .keycap { border-color: #52605b; color: #e0d6b7; background: #29353a; }
@@ -377,6 +382,7 @@
       .brand-mark { width: 38px; height: 38px; font-size: 19px; }
       h1 { font-size: 18px; }
       .season-chip { padding: 7px 9px; font-size: 10px; }
+      .top-actions { align-items: end; flex-direction: column-reverse; gap: 5px; }
       .intro { align-items: start; flex-direction: column; gap: 5px; }
       .intro p { max-width: none; text-align: left; }
       .side { grid-template-columns: 1fr; }
@@ -395,16 +401,19 @@
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">✦</div>
         <div>
-          <p class="eyebrow">Caderno de campo · nº 01</p>
+          <p class="eyebrow">Crônicas da Semente-Lume · volume I</p>
           <h1>Clareira de Brasa</h1>
         </div>
+
       </div>
-      <div class="season-chip"><span aria-hidden="true">☼</span><span>Outono · tarde morna</span></div>
+      <div class="top-actions">
+        <div class="season-chip"><span aria-hidden="true">☼</span><span>Outono · tarde morna</span></div>
+      </div>
     </header>
 
     <section class="intro" aria-labelledby="place-title">
-      <h2 id="place-title">Um bosque que guarda pequenos brilhos.</h2>
-      <p>Entre a horta antiga e as árvores de cobre, criaturas curiosas passeiam sem pressa.</p>
+      <h2 id="place-title">Toda criatura deixa um rastro de luz.</h2>
+      <p>Explore os recantos do bosque, registre seus moradores e descubra por que as Sementes-Lume estão despertando.</p>
     </section>
 
     <div class="layout">
@@ -441,7 +450,7 @@
             <div class="portrait" aria-hidden="true">🌱</div>
             <div class="partner-info">
               <strong>Braseirinho</strong>
-              <small>Broto de brasa · tipo folha</small>
+              <small>Companheiro de brasa e broto</small>
               <div class="hp-line" aria-label="Energia de Braseirinho">
                 <span class="hp-label">HP</span>
                 <div class="hp-track"><div class="hp-fill" id="field-hp-fill"></div></div>
@@ -477,6 +486,10 @@
               <span class="action-copy"><strong>Sopro de Brasa</strong><small>Mais forte · consome uma brasa.</small></span>
               <span class="ember-count" id="ember-count">✦ 2</span>
             </button>
+            <button type="button" class="action-button" id="move-three" aria-keyshortcuts="3">
+              <span class="action-copy"><strong>Dardo de Orvalho</strong><small>Jato de maré · forte contra pedra.</small></span>
+              <span class="action-key">3</span>
+            </button>
           </div>
           <div class="outcome" id="outcome" aria-live="polite">
             <strong id="outcome-title"></strong>
@@ -487,7 +500,7 @@
 
         <section class="card journal">
           <div class="side-heading">
-            <h3>Diário de campo</h3>
+            <h3>Caderno da Semente-Lume</h3>
             <div class="inventory-pills">
               <span class="seed-pill">✦ <span id="seed-count">0</span> sementes-lume</span>
               <span class="seed-pill mineral-pill">⛏ <span id="ore-count">0</span> pedras</span>
@@ -501,14 +514,19 @@
             <button type="button" class="sell-button" id="sell-items" disabled>Vender mochila</button>
           </div>
           <p id="journal-text">Uma luz tímida piscou perto do pomar. Quem sabe um encontro espera por você?</p>
-          <div class="journal-note">Anote o que o bosque lhe contar.</div>
+          <div class="journal-note">Missão do bosque: descubra os 8 moradores que seguem o brilho.</div>
+          <div class="discovery-progress" aria-label="Progresso do caderno de campo">
+            <span>Moradores descobertos</span>
+            <strong id="discovery-count">0 / 8</strong>
+            <span class="discovery-track"><span id="discovery-fill"></span></span>
+          </div>
         </section>
       </aside>
     </div>
 
     <footer class="footer">
       <span><strong>Como jogar</strong> · <span class="keycap">W</span><span class="keycap">A</span><span class="keycap">S</span><span class="keycap">D</span> / setas para andar · <span class="keycap">E</span> conversar, minerar e atravessar</span>
-      <span>Batalha: <span class="keycap">1</span> folha · <span class="keycap">2</span> brasa</span>
+      <span>Batalha: <span class="keycap">1</span> folha · <span class="keycap">2</span> brasa · <span class="keycap">3</span> água</span>
     </footer>
   </main>
 
@@ -537,22 +555,55 @@
       { id: "west-pine", name: "Pinheiro do Oeste", x: 3, y: 18, shaken: false }
     ];
     const rockMonster = {
-      id: "rochip", name: "Rocafino", kind: "terra e pedra",
-      x: 247, y: 100, hp: 22, maxHp: 22, color: "rock", defeated: false
+      id: "rochip", name: "Rocafino", kind: "pedra e raiz",
+      x: 247, y: 100, hp: 24, maxHp: 24, attack: 6, element: "pedra", types: ["pedra", "raiz"], sprite: "rochip", color: "rock", defeated: false
     };
     const waterMonster = {
-      id: "gelelia", name: "Gelegelo", kind: "água e gelo",
-      x: 247, y: 100, hp: 20, maxHp: 20, color: "water", defeated: false
+      id: "gelelia", name: "Gelegelo", kind: "maré e geada",
+      x: 247, y: 100, hp: 20, maxHp: 20, attack: 5, element: "mare", types: ["mare", "geada"], sprite: "gelelia", color: "water", defeated: false
     };
     const canopyMonster = {
-      id: "folhibrisa", name: "Folhibrisa", kind: "planta, voador e inseto",
-      x: 247, y: 100, hp: 20, maxHp: 20, color: "canopy", defeated: false
+      id: "folhibrisa", name: "Folhibrisa", kind: "broto e vento",
+      x: 247, y: 100, hp: 20, maxHp: 20, attack: 5, element: "broto", types: ["broto", "vento"], sprite: "folhibrisa", color: "canopy", defeated: false
+    };
+    const crystalMonster = {
+      id: "quartilume", name: "Quartilume", kind: "pedra e cristal",
+      x: 247, y: 100, hp: 19, maxHp: 19, attack: 7, element: "pedra", types: ["pedra", "cristal"], sprite: "quartilume", color: "crystal", defeated: false
+    };
+    const brookMonster = {
+      id: "riachisco", name: "Riachisco", kind: "maré e seiva",
+      x: 247, y: 100, hp: 17, maxHp: 17, attack: 4, element: "mare", types: ["mare", "seiva"], sprite: "riachisco", color: "brook", defeated: false
+    };
+    const blossomMonster = {
+      id: "avelume", name: "Avelume", kind: "broto e pólen",
+      x: 247, y: 100, hp: 21, maxHp: 21, attack: 5, element: "broto", types: ["broto", "polen"], sprite: "avelume", color: "blossom", defeated: false
+    };
+    const starterCreature = {
+      id: "braseirinho", name: "Braseirinho", kind: "brasa e broto",
+      hp: maxHp, maxHp, attack: 5, element: "brasa", types: ["brasa", "broto"], sprite: "braseirinho", color: "braseirinho"
     };
     const shop = { x: 126, y: 103, radius: 26 };
-    const encounters = [
-      { id: "nuvemel", name: "Nuvemel", kind: "orvalho", x: 216, y: 126, hp: 18, maxHp: 18, color: "moth", defeated: false },
-      { id: "casquim", name: "Casquim", kind: "musgo", x: 259, y: 79, hp: 22, maxHp: 22, color: "beetle", defeated: false }
+    const fieldCreatureSpecies = [
+      { id: "nuvemel", name: "Nuvemel", kind: "névoa e vento", x: 216, y: 126, hp: 18, maxHp: 18, attack: 4, element: "nevoa", types: ["nevoa", "vento"], sprite: "nuvemel", color: "moth", defeated: false },
+      { id: "casquim", name: "Casquim", kind: "casca e broto", x: 259, y: 79, hp: 22, maxHp: 22, attack: 6, element: "casca", types: ["casca", "broto"], sprite: "casquim", color: "beetle", defeated: false },
+      { id: "riachisco-field", name: "Riachisco", kind: "maré e seiva", x: 174, y: 120, hp: 17, maxHp: 17, attack: 4, element: "mare", types: ["mare", "seiva"], sprite: "riachisco", color: "brook", defeated: false },
+      { id: "quartilume-field", name: "Quartilume", kind: "pedra e cristal", x: 201, y: 82, hp: 19, maxHp: 19, attack: 7, element: "pedra", types: ["pedra", "cristal"], sprite: "quartilume", color: "crystal", defeated: false },
+      { id: "avelume-field", name: "Avelume", kind: "broto e pólen", x: 88, y: 139, hp: 21, maxHp: 21, attack: 5, element: "broto", types: ["broto", "polen"], sprite: "avelume", color: "blossom", defeated: false }
     ];
+    const speciesCatalog = [
+      ...fieldCreatureSpecies, rockMonster, waterMonster, canopyMonster, crystalMonster, brookMonster, blossomMonster
+    ];
+    const encounters = [];
+    const spawnPoints = [
+      { id: "trilha-do-carvalho", area: "field", region: "Trilha do Carvalho", x: 216, y: 126, pool: ["nuvemel", "casquim", "folhibrisa", "avelume"], active: null, nextSpawnAt: 0 },
+      { id: "pedreira-da-brasa", area: "field", region: "Pedreira da Brasa", x: 259, y: 79, pool: ["quartilume", "rochip", "casquim"], active: null, nextSpawnAt: 0 },
+      { id: "margem-do-lago", area: "field", region: "Margem do Lago Espelhado", x: 68, y: 126, pool: ["gelelia", "riachisco", "nuvemel"], active: null, nextSpawnAt: 0 },
+      { id: "pomar-das-brumas", area: "field", region: "Pomar das Brumas", x: 88, y: 139, pool: ["avelume", "folhibrisa", "casquim"], active: null, nextSpawnAt: 0 },
+      { id: "clareira-antiga", area: "field", region: "Clareira das Folhas Douradas", x: 174, y: 120, pool: ["riachisco", "nuvemel", "avelume"], active: null, nextSpawnAt: 0 },
+      { id: "veio-da-raiz", area: "cave", region: "Galeria do Quartzo", x: 137, y: 105, pool: ["rochip", "quartilume"], active: null, nextSpawnAt: 0 },
+      { id: "eco-profundo", area: "cave", region: "Galeria do Eco", x: 235, y: 129, pool: ["quartilume", "rochip"], active: null, nextSpawnAt: 0 }
+    ];
+    const SPAWN_RESPAWN_MS = 14000;
     const state = {
       mode: "field",
       hp: maxHp,
@@ -574,8 +625,10 @@
       lastFrameTime: 0,
       hudAt: 0,
       frame: 0,
-      flashUntil: 0,
-      journal: "Uma luz tímida piscou perto do pomar. Quem sabe um encontro espera por você?"
+      battleAction: null,
+      encounterIntroAt: 0,
+      journal: "Uma Semente-Lume aquece sua mochila. O bosque espera pelo primeiro registro.",
+      discoveredCreatures: new Set()
     };
 
     const ui = {
@@ -596,6 +649,7 @@
       log: document.getElementById("battle-log"),
       moveOne: document.getElementById("move-one"),
       moveTwo: document.getElementById("move-two"),
+      moveThree: document.getElementById("move-three"),
       actionList: document.getElementById("action-list"),
       emberCount: document.getElementById("ember-count"),
       outcome: document.getElementById("outcome"),
@@ -609,7 +663,9 @@
       coinCount: document.getElementById("coin-count"),
       shopBanner: document.getElementById("shop-banner"),
       shopOffer: document.getElementById("shop-offer"),
-      sellItems: document.getElementById("sell-items")
+      sellItems: document.getElementById("sell-items"),
+      discoveryCount: document.getElementById("discovery-count"),
+      discoveryFill: document.getElementById("discovery-fill")
     };
 
     const sprites = {
@@ -758,56 +814,110 @@
         "................"
       ],
       rochip: [
-        ".......kkkk......",
-        ".....kksssskk....",
-        "...kkssrrrrsskk..",
-        "..kssrrrrrrrrssk.",
-        ".kssrrrkkkkrrrssk",
-        "kssrrkkkookkrrsssk",
-        "kssrrkkookkkrrsssk",
-        "kssrrkkrrrrkkrrssk",
-        "kssrrkkrrrkkkrrssk",
-        ".kssrrkkkrrkrrssk.",
-        "..kkssrrrrrrrrkk..",
-        "...kbbkksskkbbk...",
-        "..kbbb..kk..bbbk..",
-        ".kk............kk.",
+        ".......kcck.......",
+        "......kcrcck......",
+        ".....kcrrrcck.....",
+        "....kccrrrrcck....",
+        "...kccrrrrrrcck...",
+        "..kccrrkkrrkkcck..",
+        ".kccrrkookkrrcck..",
+        "kccrrkkrrrkkrrcck.",
+        "kccrrkkrrrkkrrcck.",
+        ".kccrrkkrrkkrrcck..",
+        "..kccrrrrrrrrcck...",
+        "...kkccrrrrcckk....",
+        "....kbbkcckbbk.....",
+        "...kkbkk..kkbkk....",
         "................",
         "................"
       ],
       gelelia: [
-        ".......kkkk......",
-        ".....kkbbbbkk....",
-        "...kkbbbbbbbbkk..",
-        "..kbbwwbbbbwwbbk.",
-        ".kbbbwwbbbbwwbbbk.",
-        "kbbbbbbbbbbbbbbbk",
-        "kbbbboobbbbboobbbk",
-        "kbbbbbbbbbbbbbbbk",
-        ".kbbbbbbbbbbbbbk.",
-        "..kbbbbbbbbbbbk...",
+        ".......kk........",
+        ".....kkbbkk.......",
         "...kkbbbbbbkk.....",
-        ".....kbbbbk........",
-        "....kk....kk........",
-        "...kk......kk.......",
+        "..kbbwwbbbbbbk....",
+        ".kbbbwwbbbbbbbkk..",
+        "kbbbbbbbbbbbbbbbk.",
+        "kbbbboobbbbboobbbk",
+        "kbbbbbbbbbbbbbbbkk",
+        ".kbbbbbbbbbbbbkk..",
+        "..kkbbbbbbbbkk.....",
+        "....kkbbbbkk........",
+        ".....kbbbbk.....kk..",
+        "....kk....kk..kkbbk.",
+        "...kk......kk..kkk..",
         "................",
         "................"
       ],
       folhibrisa: [
-        ".......kkkk......",
-        "....kkkggggkk....",
+        ".......kggk.......",
+        "....kkkggggkkk....",
         "..kkggggggggggkk..",
-        ".kggwwggggggwwggk.",
-        "kgggwwggggggwwgggk",
-        "kggggggggggggggggk",
-        ".kgggggoogggooggk.",
-        "..kggggggggggggk..",
-        "...kggggggggggk...",
-        "..kkggggggggggkk..",
-        ".kllkggggggkllk...",
-        "kllk..kkkk..kllk..",
-        "kk....k..k....kk...",
-        "......k..k..........",
+        ".kgwwggggggggwwgk.",
+        "kggwwwggggggwwwggk",
+        "kgggggggogggooogk..",
+        ".kggggggggggggggk..",
+        "..kggggggggggggk...",
+        "...kgggllllgggk....",
+        "..kkgggllllgggkk...",
+        ".kllkgggllgggkllk..",
+        "kllk..kkggkk..kllk.",
+        "kk....k....k....kk.",
+        "......kk..kk........",
+        "................",
+        "................"
+      ],
+      quartilume: [
+        "........cc........",
+        ".......kcck.......",
+        "......kcrcck......",
+        ".....kccrccck......",
+        "....kccrrrccck.....",
+        "...kccrrrrrccck....",
+        "..kccrrkkrrrccck...",
+        ".kccrrkookkrrccck..",
+        "kccrrkkrrrrrkkccck.",
+        "kcccrrrkkkkrrrccck.",
+        ".kcccrrrrrrrrccck..",
+        "..kkccrrrrrrcckk....",
+        "....kbbkcckbbk......",
+        "...kkbk....kbkk.....",
+        "................",
+        "................"
+      ],
+      riachisco: [
+        "........kk........",
+        "......kkbbkk.......",
+        "....kkbbbbbbkk.....",
+        "...kbbwwbbbbbbk....",
+        "..kbbbwwbbbbbbbk...",
+        ".kbbbbbbbbbbbbbbk..",
+        "kbbbboobbbbbboobbbk",
+        "kbbbbbbbbbbbbbbbbbk",
+        ".kbbbbbbbbbbbbbbk..",
+        "..kkbbbbbbbbbbkk...",
+        "....kkbbbbbbkk......",
+        "...kllk....kllk.....",
+        "..kllk......kllk....",
+        "...kk........kk......",
+        "................",
+        "................"
+      ],
+      avelume: [
+        "........yy........",
+        "......kggggk.......",
+        "....kkggggggkk......",
+        "...kggwwggggggk.....",
+        "..kgggwwgggggggk....",
+        ".kggggggggggggggk...",
+        "kgggggooggggooogk...",
+        ".kgggggggggggggk....",
+        "..kgggggggggggk.....",
+        "...kgggggggggk......",
+        "..kllkggggkllk......",
+        ".kllk..kk..kllk.....",
+        "kk....k..k....kk.....",
+        "......k..k...........",
         "................",
         "................"
       ],
@@ -854,9 +964,12 @@
       braseirinho: { g: "#456c4b", l: "#83aa65", o: "#f6c45f", b: "#755a3c" },
       nuvemel: { y: "#e8b852", w: "#f8e6a9", o: "#4d4739", v: "#d88c62", k: "#4e5340" },
       casquim: { g: "#557e4e", m: "#9dad69", o: "#4a4b39", b: "#73543b", k: "#42483a" },
-      rock: { r: "#a77850", s: "#758078", o: "#dfa854", k: "#39413d", b: "#574d43" },
+      rock: { r: "#9b7052", s: "#758078", o: "#dfa854", k: "#39413d", b: "#574d43", c: "#48bdb0" },
       water: { b: "#629db3", w: "#d8f0df", o: "#4f6070", k: "#394c57" },
       canopy: { g: "#5e9659", w: "#f0e2b4", o: "#485444", l: "#90b56e", k: "#38473c" },
+      crystal: { c: "#49bdb2", r: "#936c55", o: "#f2cb72", k: "#34474a", b: "#574d43" },
+      brook: { b: "#4f9fa9", w: "#d9f2d8", o: "#e6c46f", k: "#344d50", l: "#76a86a" },
+      blossom: { g: "#57905d", w: "#fff0cb", o: "#e2a35c", k: "#39483d", l: "#a1c56c", y: "#eacb72" },
       trainer: { c: "#d89e61", g: "#597a55", t: "#b9513c", w: "#f1d7a3", p: "#445a70", k: "#42433d" },
       villager: { c: "#d9a06b", s: "#ecc58d", o: "#79513b", d: "#69804e", w: "#ede0b7", b: "#5a654c", k: "#49483c" }
     };
@@ -1135,6 +1248,116 @@
         });
       });
       ctx.restore();
+    }
+
+    const typeEffectiveness = {
+      brasa: { broto: 2, geada: 2, mare: .5, pedra: .5 },
+      mare: { pedra: 2, brasa: 2, broto: .5 },
+      broto: { pedra: 2, mare: 2, brasa: .5 },
+      pedra: { broto: .5, mare: .5 }
+    };
+
+    function creatureArtwork(foe) {
+      const sprite = foe.sprite || (foe.color === "moth" ? "nuvemel"
+        : foe.color === "rock" ? "rochip"
+          : foe.color === "water" ? "gelelia"
+            : foe.color === "canopy" ? "folhibrisa" : "casquim");
+      return { sprite, palette: colors[foe.color] || colors[sprite] || colors.casquim };
+    }
+
+    function getTypeMultiplier(attackElement, defenseElement) {
+      const defenders = Array.isArray(defenseElement) ? defenseElement : [defenseElement];
+      return defenders.reduce((multiplier, defender) => {
+        const matchup = typeEffectiveness[attackElement] && typeEffectiveness[attackElement][defender];
+        return multiplier * (matchup === undefined ? 1 : matchup);
+      }, 1);
+    }
+
+    function getWeaknessText(defenderTypes) {
+      const defenders = Array.isArray(defenderTypes) ? defenderTypes : [defenderTypes];
+      const weaknesses = Object.entries(typeEffectiveness)
+        .filter(([type]) => getTypeMultiplier(type, defenders) > 1)
+        .map(([type]) => ({ brasa: "Brasa", mare: "Maré", broto: "Broto", pedra: "Pedra" }[type]));
+      return weaknesses.length ? weaknesses.join(" e ") : "nenhuma conhecida";
+    }
+
+    function creatureCatalog() {
+      const unique = new Map();
+      [starterCreature, ...speciesCatalog]
+        .forEach(creature => unique.set(creature.sprite, creature));
+      return [...unique.values()];
+    }
+
+    function spawnWildCreature(point) {
+      const available = point.pool.filter(sprite => sprite !== point.lastSpecies);
+      const choices = available.length ? available : point.pool;
+      const sprite = choices[Math.floor(Math.random() * choices.length)];
+      const template = speciesCatalog.find(creature => creature.sprite === sprite);
+      if (!template) return null;
+      const foe = {
+        ...template,
+        id: `${sprite}-${point.id}`,
+        speciesId: sprite,
+        x: point.x,
+        y: point.y,
+        region: point.region,
+        spawnPointId: point.id,
+        defeated: false
+      };
+      point.lastSpecies = sprite;
+      point.active = foe;
+      point.nextSpawnAt = 0;
+      encounters.push(foe);
+      return foe;
+    }
+
+    function updateWildSpawns(now) {
+      if (state.mode !== "field" && state.mode !== "cave") return;
+      spawnPoints.filter(point => point.area === state.mode).forEach(point => {
+        if (!point.active && now >= point.nextSpawnAt) spawnWildCreature(point);
+      });
+    }
+
+    function getCurrentRegion() {
+      if (state.mode === "cave") {
+        const nearbyGallery = spawnPoints
+          .filter(point => point.area === "cave")
+          .sort((a, b) => Math.hypot(player.x - a.x, player.y - a.y) - Math.hypot(player.x - b.x, player.y - b.y))[0];
+        return nearbyGallery && Math.hypot(player.x - nearbyGallery.x, player.y - nearbyGallery.y) < 52
+          ? { name: nearbyGallery.region, hint: "O eco corre pelos veios. Criaturas de pedra rondam as galerias." }
+          : { name: "Gruta das Raízes", hint: "Cristais antigos pulsam sob a terra. Procure veios e sinais de vida." };
+      }
+      if (Math.hypot(player.x - fishingSpot.x, player.y - fishingSpot.y) < 48) {
+        return { name: "Margem do Lago Espelhado", hint: "A superfície guarda reflexos de criaturas que vivem entre água e névoa." };
+      }
+      const tree = shakeableTrees.find(item => Math.hypot(player.x - (item.x + 16), player.y - (item.y + 49)) < 45);
+      if (tree) return { name: "Pomar das Brumas", hint: "As copas escondem criaturas leves; o farfalhar pode revelar uma delas." };
+      if (Math.hypot(player.x - 273, player.y - 111) < 52) {
+        return { name: "Pedreira da Brasa", hint: "Pedras aquecidas guardam cristais e criaturas resistentes." };
+      }
+      const nearestSpawn = spawnPoints
+        .filter(point => point.area === "field")
+        .sort((a, b) => Math.hypot(player.x - a.x, player.y - a.y) - Math.hypot(player.x - b.x, player.y - b.y))[0];
+      if (nearestSpawn && Math.hypot(player.x - nearestSpawn.x, player.y - nearestSpawn.y) < 42) {
+        return { name: nearestSpawn.region, hint: "Pegadas recentes cruzam o caminho. Aproxime-se com calma para conhecer quem vive aqui." };
+      }
+      return { name: "Clareira das Folhas Douradas", hint: "As Sementes-Lume despertam por todo o bosque. Explore e registre seus moradores." };
+    }
+
+    function updateDiscoveryUI() {
+      const total = new Set(speciesCatalog.map(creature => creature.sprite)).size;
+      const discovered = state.discoveredCreatures.size;
+      ui.discoveryCount.textContent = `${discovered} / ${total}`;
+      ui.discoveryFill.style.width = `${discovered / total * 100}%`;
+    }
+
+    function recordDiscovery(foe, source = "") {
+      const species = foe.speciesId || foe.sprite || foe.id;
+      if (state.discoveredCreatures.has(species)) return;
+      state.discoveredCreatures.add(species);
+      state.journal = `Nova descoberta: ${foe.name}, morador de ${foe.region || source || "um recanto do bosque"}.`;
+      ui.journal.textContent = state.journal;
+      updateDiscoveryUI();
     }
 
     function drawFlower(x, y, petal, center = "#efcf83") {
@@ -1504,15 +1727,15 @@
           rect(point.x + 1, point.y - 3, 2, 2, "#cfb676");
         } });
       }
-      encounters.forEach((foe, index) => objects.push({ x: foe.x, y: foe.y, draw: () => {
+      encounters.filter(foe => foe.spawnPointId && spawnPoints.find(point => point.id === foe.spawnPointId)?.area === "field")
+        .forEach((foe, index) => objects.push({ x: foe.x, y: foe.y, draw: () => {
         const point = isoPoint(foe.x, foe.y);
         if (foe.defeated) {
           isoDiamond(point.x, point.y, 3, 2, "#d0b77a");
           return;
         }
         const bob = Math.sin(state.frame / 14 + index * 2) * 1.5;
-        const sprite = foe.color === "moth" ? "nuvemel" : "casquim";
-        const palette = foe.color === "moth" ? colors.nuvemel : colors.casquim;
+        const { sprite, palette } = creatureArtwork(foe);
         isoDiamond(point.x, point.y + 1, 10, 4, "#28332d");
         pixelSprite(sprite, point.x - 12, point.y - 29 + bob, 1.5, palette);
         if (nearbyFoe() === foe) rect(point.x - 2, point.y - 34 + bob, 4, 3, "#fff0bc");
@@ -1585,6 +1808,16 @@
       const objects = oreVeins.map(vein => ({
         x: vein.x, y: vein.y, draw: () => drawOreVein(vein)
       }));
+      encounters.filter(foe => foe.spawnPointId && spawnPoints.find(point => point.id === foe.spawnPointId)?.area === "cave")
+        .forEach((foe, index) => objects.push({ x: foe.x, y: foe.y, draw: () => {
+          if (foe.defeated) return;
+          const point = isoPoint(foe.x, foe.y);
+          const bob = Math.sin(state.frame / 14 + index * 2) * 1.5;
+          const { sprite, palette } = creatureArtwork(foe);
+          isoDiamond(point.x, point.y + 1, 10, 4, "#1c2523");
+          pixelSprite(sprite, point.x - 12, point.y - 29 + bob, 1.5, palette);
+          if (nearbyFoe() === foe) rect(point.x - 2, point.y - 34 + bob, 4, 3, "#f5d27b");
+        } }));
       for (let i = 0; i < 6; i++) {
         const x = 46 + i * 47;
         const y = 60 + (i % 3) * 10;
@@ -1600,6 +1833,231 @@
       objects.sort((a, b) => a.x + a.y - (b.x + b.y)).forEach(object => object.draw());
     }
 
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function smoothStep(value) {
+      const t = clamp01(value);
+      return t * t * (3 - 2 * t);
+    }
+
+    function drawBattleCreature(sprite, palette, species, baseX, baseY, enemy, now) {
+      const action = state.battleAction;
+      const progress = action ? clamp01((now - action.startedAt) / action.duration) : 0;
+      const attacking = action && (action.side === "enemy") === enemy;
+      const hit = action && !attacking && action.impactedAt
+        ? clamp01((now - action.impactedAt) / 300)
+        : 1;
+      const intro = smoothStep((now - state.encounterIntroAt) / 650);
+      const phase = state.frame / (species === "rock" ? 22 : species === "water" ? 13 : 16);
+      const idleBob = Math.sin(phase + (enemy ? .7 : 0)) * (species === "rock" ? 1 : 2.4);
+      const lunge = attacking ? Math.sin(Math.PI * smoothStep(progress / .7)) * 27 : 0;
+      const recoil = action && !attacking && action.impactedAt && hit < 1
+        ? Math.sin((now - action.impactedAt) * .075) * (1 - hit) * 5
+        : 0;
+      const direction = enemy ? -1 : 1;
+      const x = baseX + (enemy ? (1 - intro) * 35 : -(1 - intro) * 29) + direction * lunge + recoil;
+      const y = baseY + idleBob - Math.sin(Math.PI * intro) * 7 + (attacking ? -Math.sin(Math.PI * progress) * 4 : 0);
+      const scale = species === "rock" || species === "water" ? 3.15 : 3;
+      const centerX = x + 24;
+      const centerY = y + 24;
+      const tint = species === "rock" ? "#d9a46c"
+        : species === "water" ? "#8de0e2"
+          : species === "canopy" || species === "moth" ? "#c6e78b"
+            : species === "beetle" ? "#c4cc78" : "#f1be71";
+
+      ctx.save();
+      ctx.globalAlpha = .72;
+      const glow = ctx.createRadialGradient(centerX, centerY, 3, centerX, centerY, species === "rock" ? 42 : 36);
+      glow.addColorStop(0, `${tint}55`);
+      glow.addColorStop(1, `${tint}00`);
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.ellipse(centerX, centerY, 38, 35, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalAlpha = .25;
+      ctx.strokeStyle = tint;
+      ctx.lineWidth = 1;
+      if (species === "water") {
+        const ripple = (state.frame % 54) / 54;
+        ctx.beginPath();
+        ctx.ellipse(centerX, baseY + 50, 20 + ripple * 14, 4 + ripple * 3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(centerX, baseY + 50, 13 + ripple * 8, 2 + ripple * 2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (species === "canopy" || species === "moth") {
+        const wing = Math.sin(state.frame * .23) * 5;
+        ctx.fillStyle = `${tint}66`;
+        [-1, 1].forEach(side => {
+          ctx.beginPath();
+          ctx.ellipse(centerX + side * (19 + wing), centerY + 1, 8, 15, side * -.35, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      } else if (species === "rock") {
+        for (let shard = 0; shard < 3; shard++) {
+          const angle = state.frame * .035 + shard * Math.PI * 2 / 3;
+          const shardX = centerX + Math.cos(angle) * 34;
+          const shardY = centerY + Math.sin(angle) * 17;
+          ctx.fillStyle = shard % 2 ? "#c5a77d" : "#819087";
+          ctx.beginPath();
+          ctx.moveTo(shardX, shardY - 4);
+          ctx.lineTo(shardX + 3, shardY);
+          ctx.lineTo(shardX, shardY + 4);
+          ctx.lineTo(shardX - 3, shardY);
+          ctx.closePath();
+          ctx.fill();
+        }
+      } else {
+        const sparkX = centerX + Math.sin(state.frame * .11) * 34;
+        ctx.fillStyle = "#f4d28a";
+        ctx.beginPath();
+        ctx.arc(sparkX, centerY - 20 + Math.cos(state.frame * .09) * 5, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = .42;
+      ctx.fillStyle = "#101b1c";
+      ctx.beginPath();
+      ctx.ellipse(centerX, baseY + 49, species === "rock" ? 27 : 23, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      if (action && !attacking && action.impactedAt && hit < .32 && Math.floor(now / 70) % 2 === 0) {
+        ctx.save();
+        ctx.globalAlpha = .45;
+        ctx.fillStyle = "#fff2ca";
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 29, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      pixelSprite(sprite, x, y, scale, palette, !enemy);
+
+      ctx.save();
+      ctx.globalAlpha = .8;
+      ctx.fillStyle = tint;
+      ctx.beginPath();
+      ctx.arc(centerX - (enemy ? 8 : -8), centerY - 6, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      return { x: centerX, y: centerY };
+    }
+
+    function drawBattleAttack(now, heroCenter, foeCenter) {
+      const action = state.battleAction;
+      if (!action) return;
+      const progress = clamp01((now - action.startedAt) / action.duration);
+      const from = action.side === "enemy" ? foeCenter : heroCenter;
+      const to = action.side === "enemy" ? heroCenter : foeCenter;
+      const projectileProgress = clamp01((progress - .2) / .48);
+      const activeProjectile = progress >= .2 && progress <= .72;
+      const species = state.encounter && state.encounter.color;
+      const moveColor = action.move === "ember" || action.move === "brasa" ? "#ffac54"
+        : action.move === "water" || action.move === "mare" ? "#83d6df"
+          : action.move === "pedra" || action.move === "cristal" ? "#d0a578"
+        : action.side === "enemy" && species === "water" ? "#b9f4f3"
+          : action.side === "enemy" && species === "rock" ? "#d0a578"
+            : action.side === "enemy" && species === "canopy" ? "#c4e77e"
+              : "#a9d887";
+
+      if (activeProjectile) {
+        const t = smoothStep(projectileProgress);
+        const x = from.x + (to.x - from.x) * t;
+        const arc = Math.sin(Math.PI * t) * 18;
+        const y = from.y + (to.y - from.y) * t - arc;
+        ctx.save();
+        ctx.globalAlpha = .42;
+        ctx.strokeStyle = moveColor;
+        ctx.lineWidth = action.move === "ember" || action.move === "brasa" ? 7 : 4;
+        ctx.beginPath();
+        ctx.moveTo(from.x + (x - from.x) * .55, from.y + (y - from.y) * .55 + 3);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.globalAlpha = .92;
+
+        if (action.move === "ember" || action.move === "brasa") {
+          const flame = ctx.createRadialGradient(x, y, 1, x, y, 12);
+          flame.addColorStop(0, "#fff6c2");
+          flame.addColorStop(.38, "#ffc261");
+          flame.addColorStop(1, "#e97042");
+          ctx.fillStyle = flame;
+          ctx.beginPath();
+          ctx.arc(x, y, 8 + Math.sin(state.frame * .8) * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          for (let spark = 0; spark < 4; spark++) {
+            const offset = (state.frame * (spark + 2) + spark * 19) % 17;
+            ctx.fillStyle = spark % 2 ? "#ffe39b" : "#ed7849";
+            ctx.fillRect(x - 11 + spark * 5, y + 5 - offset, 2, 2);
+          }
+        } else if (action.move === "water" || action.move === "mare") {
+          ctx.translate(x, y);
+          ctx.rotate(Math.PI / 4 + t * 1.8);
+          ctx.fillStyle = "#d9ffff";
+          ctx.beginPath();
+          ctx.moveTo(0, -11);
+          ctx.lineTo(6, 0);
+          ctx.lineTo(0, 11);
+          ctx.lineTo(-6, 0);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#7ec9d1";
+          ctx.fillRect(-2, -4, 3, 10);
+        } else if (action.move === "pedra" || action.move === "cristal" || (action.side === "enemy" && species === "rock")) {
+          ctx.fillStyle = "#b58b61";
+          ctx.beginPath();
+          ctx.moveTo(x, y - 9);
+          ctx.lineTo(x + 8, y - 3);
+          ctx.lineTo(x + 5, y + 7);
+          ctx.lineTo(x - 4, y + 9);
+          ctx.lineTo(x - 8, y);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#e3c18d";
+          ctx.fillRect(x - 2, y - 5, 3, 6);
+        } else {
+          for (let leaf = 0; leaf < 3; leaf++) {
+            const spread = leaf - 1;
+            ctx.save();
+            ctx.translate(x + spread * 4, y + Math.abs(spread) * 2);
+            ctx.rotate(t * 7 + spread * .7);
+            ctx.fillStyle = leaf === 1 ? "#e6f0b5" : moveColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, leaf === 1 ? 7 : 5, 2.5, -.4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#f4e3a9";
+            ctx.fillRect(-1, -1, 2, 2);
+            ctx.restore();
+          }
+        }
+        ctx.restore();
+      }
+
+      if (action.impactedAt && now - action.impactedAt < 360) {
+        const impact = clamp01((now - action.impactedAt) / 360);
+        const radius = 5 + impact * 23;
+        const target = action.side === "enemy" ? heroCenter : foeCenter;
+        ctx.save();
+        ctx.globalAlpha = (1 - impact) * .85;
+        ctx.strokeStyle = action.move === "ember" || action.move === "brasa" ? "#ffe2a0" : moveColor;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(target.x, target.y, radius, radius * .62, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        for (let particle = 0; particle < 7; particle++) {
+          const angle = particle * Math.PI * 2 / 7 + impact * 1.5;
+          const distance = radius * (1 + (particle % 2) * .2);
+          ctx.fillStyle = particle % 2 ? moveColor : "#fff0bc";
+          ctx.beginPath();
+          ctx.arc(target.x + Math.cos(angle) * distance, target.y + Math.sin(angle) * distance * .62, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
     function drawBattle() {
       const sky = ctx.createLinearGradient(0, 0, 0, H);
       sky.addColorStop(0, "#263e43");
@@ -1607,14 +2065,21 @@
       sky.addColorStop(1, "#283a31");
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, W, H);
+      const time = performance.now();
+      const breeze = Math.sin(state.frame / 37) * 2;
       for (let i = 0; i < 10; i++) {
         const x = i * 35 - 8;
-        const y = 17 + (i % 3) * 10;
-        rect(x, y + 16, 8, 24, i % 2 ? "#354f3d" : "#2b4739");
-        rect(x - 9, y + 2, 27, 24, i % 2 ? "#496d49" : "#3e6244");
-        rect(x - 4, y - 5, 17, 15, i % 2 ? "#5d7c4c" : "#52734a");
-        rect(x + 2, y + 4, 3, 3, "#8da660");
+        const y = 17 + (i % 3) * 10 + breeze;
+        rect(x + breeze, y + 16, 8, 24, i % 2 ? "#354f3d" : "#2b4739");
+        rect(x - 9 + breeze, y + 2, 27, 24, i % 2 ? "#496d49" : "#3e6244");
+        rect(x - 4 + breeze, y - 5, 17, 15, i % 2 ? "#5d7c4c" : "#52734a");
+        rect(x + 2 + breeze, y + 4, 3, 3, "#8da660");
       }
+      const vignette = ctx.createRadialGradient(160, 82, 28, 160, 82, 185);
+      vignette.addColorStop(0, "rgb(238 217 151 / 9%)");
+      vignette.addColorStop(1, "rgb(8 19 20 / 30%)");
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, W, H);
       isoDiamond(71, 145, 62, 23, "#342f28");
       isoDiamond(71, 139, 58, 21, "#88744b");
       isoDiamond(71, 135, 49, 17, "#6c8a4d");
@@ -1631,31 +2096,25 @@
 
       const foe = state.encounter;
       if (!foe) return;
-      const enemySprite = foe.color === "moth" ? "nuvemel"
-        : foe.color === "rock" ? "rochip"
-          : foe.color === "water" ? "gelelia"
-            : foe.color === "canopy" ? "folhibrisa" : "casquim";
-      const enemyPalette = foe.color === "moth" ? colors.nuvemel
-        : foe.color === "rock" ? colors.rock
-          : foe.color === "water" ? colors.water
-            : foe.color === "canopy" ? colors.canopy : colors.casquim;
-      const bob = Math.sin(state.frame / 12) * 2;
+      const { sprite: enemySprite, palette: enemyPalette } = creatureArtwork(foe);
+      const groundGlow = ctx.createRadialGradient(71, 133, 3, 71, 133, 63);
+      groundGlow.addColorStop(0, "rgb(220 184 105 / 18%)");
+      groundGlow.addColorStop(1, "rgb(220 184 105 / 0%)");
+      ctx.fillStyle = groundGlow;
+      ctx.fillRect(0, 75, 145, 100);
       pixelSprite("trainerBack", 37, 108, 2, colors.trainer);
-      pixelSprite(enemySprite, 215, 39 + bob, 3, enemyPalette);
-      pixelSprite("braseirinho", 88, 77 + Math.sin(state.frame / 10 + 1) * 2, 3, colors.braseirinho, true);
-
-      if (state.flashUntil > performance.now()) {
-        rect(198, 83, 53, 4, "#fff0b0");
-        rect(211, 76, 35, 3, "#fff8d5");
-        rect(204, 91, 42, 3, "#f0b768");
-      }
+      const foeCenter = drawBattleCreature(enemySprite, enemyPalette, foe.color, 215, 39, true, time);
+      const heroCenter = drawBattleCreature("braseirinho", colors.braseirinho, "braseirinho", 88, 77, false, time);
+      drawBattleAttack(time, heroCenter, foeCenter);
     }
 
     function nearestFoe() {
       let nearest = null;
       let best = Infinity;
       encounters.forEach(foe => {
-        if (foe.defeated) return;
+        if (foe.defeated || !foe.spawnPointId) return;
+        const point = spawnPoints.find(item => item.id === foe.spawnPointId);
+        if (!point || point.area !== state.mode) return;
         const distance = Math.hypot(player.x - foe.x, player.y - foe.y);
         if (distance < best) { best = distance; nearest = foe; }
       });
@@ -1663,7 +2122,7 @@
     }
 
     function nearbyFoe() {
-      return state.mode === "field" ? nearestFoe() : null;
+      return state.mode === "field" || state.mode === "cave" ? nearestFoe() : null;
     }
 
     function drawExplorationScene(render, background) {
@@ -1705,6 +2164,12 @@
 
     function updateFieldUI() {
       updateHealth();
+      updateDiscoveryUI();
+      const region = getCurrentRegion();
+      if (state.mode === "field" || state.mode === "cave") {
+        ui.title.textContent = region.name;
+        ui.mode.textContent = state.mode === "cave" ? "EXPLORAÇÃO · GRUTA" : "EXPLORAÇÃO · BOSQUE";
+      }
       ui.seedCount.textContent = String(state.seeds);
       ui.oreCount.textContent = String(state.minerals);
       ui.fishCount.textContent = String(state.fish);
@@ -1753,7 +2218,7 @@
                       : oreVeins.every(vein => vein.mined)
                         ? "Os veios desta gruta já foram minerados."
                         : "A gruta guarda veios de minério entre as paredes."
-                  : "O vento traz cheiro de maçã assada. Há pegadas entre as folhas...";
+                  : region.hint;
     }
 
     function updateEventFeedback(now) {
@@ -1781,9 +2246,9 @@
       ui.partner.hidden = false;
       ui.battle.classList.toggle("active", inEncounter);
       ui.title.textContent = inEncounter
-        ? state.encounter && state.encounter.color === "rock" ? "Um guardião das rochas despertou"
-          : state.encounter && state.encounter.color === "water" ? "Um vulto agitou o lago"
-            : state.encounter && state.encounter.color === "canopy" ? "As folhas ganharam asas"
+        ? state.encounter && state.encounter.element === "pedra" ? "Um guardião das pedras despertou"
+          : state.encounter && state.encounter.element === "mare" ? "Um vulto das águas chegou"
+            : state.encounter && state.encounter.element === "broto" ? "As folhas ganharam vida"
               : "Um encontro sob as árvores"
         : mode === "cave" ? "Gruta das Raízes" : "A clareira das folhas douradas";
       ui.mode.textContent = inEncounter
@@ -1817,7 +2282,7 @@
       state.journal = `Você minerou uma pedra de ${vein.name}. O eco se espalhou pela gruta...`;
       ui.journal.textContent = state.journal;
       ui.oreCount.textContent = String(state.minerals);
-      triggerEventEncounter(rockMonster, "O eco da mineração");
+      triggerEventEncounter(chooseEncounter([rockMonster, crystalMonster]), "O eco da mineração");
     }
 
     function startFishing() {
@@ -1835,7 +2300,7 @@
         state.busy = false;
         state.journal = "Você recolheu um peixe-prisma. As águas se agitam...";
         ui.journal.textContent = state.journal;
-        triggerEventEncounter(waterMonster, "O respingo da pesca");
+        triggerEventEncounter(chooseEncounter([waterMonster, brookMonster]), "O respingo da pesca");
       }, FISHING_DURATION_MS);
     }
 
@@ -1852,7 +2317,7 @@
       ui.hint.textContent = "Um bater de asas ecoa por entre os galhos...";
       window.setTimeout(() => {
         state.busy = false;
-        triggerEventEncounter(canopyMonster, "O farfalhar da árvore");
+        triggerEventEncounter(chooseEncounter([canopyMonster, blossomMonster]), "O farfalhar da árvore");
       }, 550);
     }
 
@@ -1871,8 +2336,12 @@
       state.cooldownNotice = "";
       foe.defeated = false;
       foe.hp = foe.maxHp;
-      startEncounter(foe);
+      startEncounter(foe, eventName);
       return true;
+    }
+
+    function chooseEncounter(pool) {
+      return pool[Math.floor(Math.random() * pool.length)];
     }
 
     function sellInventory() {
@@ -1891,36 +2360,31 @@
       updateFieldUI();
     }
 
-    function startEncounter(foe) {
+    function startEncounter(foe, source = "") {
       if (!foe || (state.mode !== "field" && state.mode !== "cave")) return;
       state.returnMode = state.mode;
       state.encounter = foe;
       state.hp = maxHp;
       state.embers = 2;
+      state.battleAction = null;
+      state.encounterIntroAt = performance.now();
       foe.hp = foe.maxHp;
       state.busy = false;
       ui.foeName.textContent = foe.name;
       ui.foeType.textContent = foe.kind;
+      recordDiscovery(foe, source);
       document.getElementById("return-field").textContent = state.returnMode === "cave" ? "Voltar à caverna" : "Voltar à clareira";
-      ui.log.textContent = foe.color === "rock"
-        ? `${foe.name} foi atraído pelo barulho da mineração! Braseirinho se prepara.`
-        : foe.color === "water"
-          ? `${foe.name} foi atraído pelo respingo da pesca! Braseirinho se prepara.`
-          : foe.color === "canopy"
-            ? `${foe.name} foi atraído pelo farfalhar da árvore! Braseirinho se prepara.`
-            : `${foe.name} apareceu entre as folhas! Braseirinho está pronto.`;
+      ui.log.textContent = source
+        ? `${foe.name} apareceu após ${source.toLowerCase()}! Braseirinho se prepara.`
+        : `${foe.name} apareceu entre as folhas! Braseirinho está pronto.`;
       ui.actionList.hidden = false;
       ui.outcome.classList.remove("active");
       ui.moveOne.disabled = false;
       ui.moveTwo.disabled = false;
+      ui.moveThree.disabled = false;
       ui.emberCount.textContent = `✦ ${state.embers}`;
-      document.getElementById("battle-meta").textContent = foe.color === "rock"
-        ? `${foe.name}, monstro de terra e pedra, surgiu após a mineração.`
-        : foe.color === "water"
-          ? `${foe.name}, monstro de água e gelo, veio investigar o lago.`
-          : foe.color === "canopy"
-            ? `${foe.name}, monstro de planta, voador e inseto, veio investigar a árvore.`
-            : `${foe.name} veio espiar a clareira. Qual movimento combina com o momento?`;
+      document.getElementById("battle-meta").textContent =
+        `${foe.region || source || "Encontro no bosque"} · HP ${foe.maxHp} · Fraco contra ${getWeaknessText(foe.types || [foe.element])}.`;
       updateFoeHealth();
       setMode("battle");
       ui.hint.textContent = `${foe.name} está diante de Braseirinho. Escolha um movimento no painel.`;
@@ -1928,20 +2392,31 @@
 
     function finishBattle(victory) {
       state.busy = false;
+      state.battleAction = null;
       state.mode = "resolved";
       ui.mode.textContent = "ENCONTRO · FIM DA RONDA";
       ui.actionList.hidden = true;
       ui.outcome.classList.add("active");
       ui.outcomeTitle.textContent = victory ? `${state.encounter.name} se despediu.` : "Uma pausa também faz parte da jornada.";
+      const miningEncounter = state.returnMode === "cave" && state.encounter.element === "pedra";
       ui.outcomeText.textContent = victory
-        ? state.encounter.color === "rock"
+        ? miningEncounter
           ? "O guardião se acalmou. O caminho da mina está livre para continuar explorando."
           : "Uma semente-lume caiu na grama. Braseirinho já está de olho no próximo caminho."
         : "Braseirinho descansou um instante. Vocês podem tentar outra vez quando quiserem.";
       if (victory) {
         state.encounter.defeated = true;
-        if (state.encounter.color === "rock") {
-          state.journal = `Você derrotou ${state.encounter.name}, guardião de terra e pedra, e conseguiu voltar à mineração.`;
+        if (state.encounter.spawnPointId) {
+          const point = spawnPoints.find(item => item.id === state.encounter.spawnPointId);
+          if (point) {
+            point.active = null;
+            point.nextSpawnAt = performance.now() + SPAWN_RESPAWN_MS;
+          }
+          const index = encounters.indexOf(state.encounter);
+          if (index >= 0) encounters.splice(index, 1);
+        }
+        if (miningEncounter) {
+          state.journal = `Você derrotou ${state.encounter.name}, guardião de pedra, e conseguiu voltar à mineração.`;
         } else {
           state.seeds++;
           state.journal = `Você e Braseirinho encontraram ${state.encounter.name}. Uma semente-lume agora descansa no bolso.`;
@@ -1952,34 +2427,90 @@
       ui.journal.textContent = state.journal;
       ui.seedCount.textContent = String(state.seeds);
       ui.log.textContent = victory
-        ? state.encounter.color === "rock"
+        ? miningEncounter
           ? `${state.encounter.name} recua para as profundezas da caverna.`
           : `${state.encounter.name} se afasta em paz; algo cintila na grama.`
         : "A rodada acabou. Vocês podem respirar e recomeçar o encontro.";
       ui.hint.textContent = victory
-        ? state.encounter.color === "rock"
+        ? miningEncounter
           ? `${state.encounter.name} se afastou. Continue minerando ou procure a saída.`
           : `${state.encounter.name} volta ao bosque. Uma semente-lume ficou para você.`
         : "Braseirinho precisa descansar. Volte à clareira para recuperar as forças.";
       updateHealth();
+      if (victory) returnFromBattle();
+    }
+
+    function returnFromBattle() {
+      const foe = state.encounter;
+      const victory = Boolean(foe && foe.defeated);
+      state.hp = maxHp;
+      state.encounter = null;
+      ui.journal.textContent = state.journal;
+      if (state.returnMode === "cave") {
+        setMode("cave");
+        ui.hint.textContent = victory
+          ? `${foe.name} saiu da batalha. Continue minerando ou procure a saída.`
+          : "Rocafino já não está por perto. Continue minerando ou procure a saída.";
+      } else {
+        setMode("field");
+        ui.hint.textContent = victory
+          ? `${foe.name} saiu da batalha. O bosque continua cheio de caminhos e pequenas surpresas.`
+          : "O bosque continua cheio de caminhos e pequenas surpresas.";
+      }
+      canvas.focus({ preventScroll: true });
+    }
+
+    function queueBattleAction(side, move, damage, onImpact, onFinish) {
+      const foe = state.encounter;
+      const action = {
+        side,
+        move,
+        damage,
+        startedAt: performance.now(),
+        duration: 820,
+        impactedAt: 0
+      };
+      state.battleAction = action;
+      window.setTimeout(() => {
+        if (state.mode !== "battle" || state.encounter !== foe || state.battleAction !== action) return;
+        action.impactedAt = performance.now();
+        onImpact();
+      }, 540);
+      window.setTimeout(() => {
+        if (state.mode !== "battle" || state.encounter !== foe || state.battleAction !== action) return;
+        state.battleAction = null;
+        onFinish();
+      }, action.duration);
     }
 
     function enemyTurn() {
       if (state.mode !== "battle" || !state.encounter) return;
-      const damage = 5 + (state.encounter.color === "beetle" || state.encounter.color === "rock" ? 1 : 0);
-      state.hp = Math.max(0, state.hp - damage);
-      updateHealth();
-      const enemyMove = state.encounter.color === "rock" ? "Abalo Rochoso"
-        : state.encounter.color === "water" ? "Rajada Glacial"
-          : state.encounter.color === "canopy" ? "Asas de Folha" : "Brisa de Musgo";
-      ui.log.textContent = `${state.encounter.name} usou ${enemyMove}. Braseirinho perdeu ${damage} de energia.`;
-      if (state.hp <= 0) {
-        window.setTimeout(() => finishBattle(false), 350);
-        return;
-      }
-      state.busy = false;
-      ui.moveOne.disabled = false;
-      ui.moveTwo.disabled = state.embers <= 0;
+      const damage = state.encounter.attack;
+      const enemyMove = {
+        pedra: "Abalo de Pedra",
+        mare: "Jato de Maré",
+        broto: "Pétalas Errantes",
+        nevoa: "Sopro de Névoa",
+        casca: "Estalo de Casca"
+      }[state.encounter.element] || "Rajada do Bosque";
+      ui.log.textContent = `${state.encounter.name} prepara ${enemyMove}...`;
+      queueBattleAction("enemy", state.encounter.element, damage, () => {
+        const multiplier = getTypeMultiplier(state.encounter.element, starterCreature.types);
+        const finalDamage = Math.round(damage * multiplier);
+        state.hp = Math.max(0, state.hp - finalDamage);
+        updateHealth();
+        const effectText = multiplier === 0 ? " O golpe não surtiu efeito." : multiplier > 1 ? " Foi muito eficaz!" : multiplier < 1 ? " Foi pouco eficaz." : "";
+        ui.log.textContent = `${state.encounter.name} usou ${enemyMove}. Braseirinho perdeu ${finalDamage} de energia.${effectText}`;
+      }, () => {
+        if (state.hp <= 0) {
+          finishBattle(false);
+          return;
+        }
+        state.busy = false;
+        ui.moveOne.disabled = false;
+        ui.moveTwo.disabled = state.embers <= 0;
+        ui.moveThree.disabled = false;
+      });
     }
 
     function chooseMove(move) {
@@ -1988,29 +2519,47 @@
       state.busy = true;
       ui.moveOne.disabled = true;
       ui.moveTwo.disabled = true;
+      ui.moveThree.disabled = true;
       let damage;
       if (move === "ember") {
         damage = 8;
         state.embers--;
-        ui.log.textContent = "Braseirinho soltou um Sopro de Brasa, quente como o sol no fim da tarde!";
+        ui.log.textContent = "Braseirinho inspira fundo. Um clarão quente se forma...";
         ui.emberCount.textContent = `✦ ${state.embers}`;
+      } else if (move === "water") {
+        damage = 5;
+        ui.log.textContent = "Uma gota luminosa se reúne e dispara pelo campo...";
       } else {
         damage = 5;
-        ui.log.textContent = "Braseirinho lançou uma Folha Veloz. As folhas dançam pelo ar!";
+        ui.log.textContent = "Braseirinho lança uma Folha Veloz pelo campo...";
       }
-      state.encounter.hp = Math.max(0, state.encounter.hp - damage);
-      state.flashUntil = performance.now() + 230;
-      updateFoeHealth();
-      if (state.encounter.hp <= 0) {
-        window.setTimeout(() => finishBattle(true), 450);
-        return;
-      }
-      window.setTimeout(enemyTurn, 500);
+      const attackElement = move === "ember" ? "brasa" : move === "water" ? "mare" : "broto";
+      const target = state.encounter;
+      queueBattleAction("player", move, damage, () => {
+        const multiplier = getTypeMultiplier(attackElement, target.types || [target.element]);
+        const finalDamage = Math.round(damage * multiplier);
+        target.hp = Math.max(0, target.hp - finalDamage);
+        updateFoeHealth();
+        const effectText = multiplier > 1 ? " É muito eficaz!" : multiplier === 0 ? " Não surtiu efeito." : multiplier < 1 ? " Não foi muito eficaz." : "";
+        ui.log.textContent = `${move === "water" ? "Dardo de Orvalho" : move === "ember" ? "Sopro de Brasa" : "Folha Veloz"} causou ${finalDamage} de dano.${effectText}`;
+        if (target.hp <= 0) finishBattle(true);
+      }, () => {
+        if (target.hp <= 0) {
+          finishBattle(true);
+          return;
+        }
+        enemyTurn();
+      });
     }
 
     function interact() {
       if (state.busy) return;
       if (state.mode === "cave") {
+        const foe = nearestFoe();
+        if (foe) {
+          startEncounter(foe);
+          return;
+        }
         const vein = nearestOreVein();
         if (vein) {
           mineVein(vein);
@@ -2107,6 +2656,7 @@
     function loop(now) {
       const delta = state.lastFrameTime ? Math.min((now - state.lastFrameTime) / 1000, .05) : 0;
       state.lastFrameTime = now;
+      updateWildSpawns(now);
       stepPlayer(delta, now);
       updateEventFeedback(now);
       requestAnimationFrame(loop);
@@ -2119,6 +2669,7 @@
       if (key === "e" && !event.repeat) interact();
       if (key === "1") chooseMove("leaf");
       if (key === "2") chooseMove("ember");
+      if (key === "3") chooseMove("water");
     });
     document.addEventListener("keyup", event => pressed.delete(event.key.toLowerCase()));
     window.addEventListener("blur", () => { pressed.clear(); heldTouch.clear(); });
@@ -2183,20 +2734,10 @@
     ui.sellItems.addEventListener("click", sellInventory);
     ui.moveOne.addEventListener("click", () => chooseMove("leaf"));
     ui.moveTwo.addEventListener("click", () => chooseMove("ember"));
-    document.getElementById("return-field").addEventListener("click", () => {
-      state.hp = maxHp;
-      state.encounter = null;
-      ui.journal.textContent = state.journal;
-      if (state.returnMode === "cave") {
-        setMode("cave");
-        ui.hint.textContent = "Rocafino já não está por perto. Continue minerando ou procure a saída.";
-      } else {
-        setMode("field");
-        ui.hint.textContent = "O bosque continua cheio de caminhos e pequenas surpresas.";
-      }
-      canvas.focus({ preventScroll: true });
-    });
+    ui.moveThree.addEventListener("click", () => chooseMove("water"));
+    document.getElementById("return-field").addEventListener("click", returnFromBattle);
 
+    updateWildSpawns(performance.now());
     updateHealth();
     updateFieldUI();
     draw();
